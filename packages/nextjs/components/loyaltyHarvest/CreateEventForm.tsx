@@ -43,13 +43,13 @@ export default function CreateEventForm() {
   const [formData, setFormData] = useState({
     nftContract: "",
     rewardToken: "",
-    rewardAmount: 0,
+    rewardAmount: "",
     creator: "",
     root: "",
-    blockStart: 0,
-    blockEnd: 0,
-    nfts: 0,
-    totalHeld: 0,
+    blockStart: "",
+    blockEnd: "",
+    nfts: "",
+    totalHeld: "",
   });
   // Uncomment and update this to include return values
   const [eventData, setEventData] = useState({
