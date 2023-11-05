@@ -38,4 +38,4 @@ export default deployClaim;
 
 // Tags are useful if you have multiple deploy files and only want to run one of them.
 // e.g. yarn deploy --tags YourContract
-deployClaim.tags = ["Claim"];
+deployClaim.tags = ["Claim", "dev"];
