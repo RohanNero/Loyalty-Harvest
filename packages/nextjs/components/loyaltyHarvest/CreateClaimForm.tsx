@@ -83,7 +83,10 @@ export default function CreateClaimForm() {
     contractName: "Claim",
     functionName: "claim",
     args: [
-      data.proof.map(item => `0x${item}` as `0x${string}`), // Convert strings to the required format
+      data.proof
+        .toString()
+        .split(",")
+        .map(item => `0x${item}` as `0x${string}`), // Convert strings to the required format
       {
         holder: data.holder,
         to: data.to,
