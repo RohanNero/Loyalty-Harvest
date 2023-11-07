@@ -31,13 +31,13 @@
   },
   "packageManager": "yarn@3.2.3",
   "devDependencies": {
+    "@prb/math": "^4.0.1",
+    "@types/async-retry": "^1.4.8",
+    "async-retry": "^1.3.3",
     "husky": "^8.0.1",
     "lint-staged": "^13.0.3"
   },
   "resolutions": {
     "usehooks-ts@^2.7.2": "patch:usehooks-ts@npm:^2.7.2#./.yarn/patches/usehooks-ts-npm-2.7.2-fceffe0e43.patch"
-  },
-  "dependencies": {
-    "@prb/math": "^4.0.1"
   }
 }

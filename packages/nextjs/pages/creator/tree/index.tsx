@@ -1,6 +1,7 @@
 // "use client";
+//import createLeaves from "../../../../backend/js/createLeaves";
 import Link from "next/link";
-import CreateEventForm from "../../../components/loyaltyHarvest/CreateEventForm";
+import CreateMerkleForm from "~~/components/loyaltyHarvest/CreateMerkleForm";
 
 export default function Page() {
   return (
@@ -12,7 +13,7 @@ export default function Page() {
       <div className="w-3/5 bg-purple-400">
         <div className="mt-[14vh] items-center justify-self-center flex flex-col w-full">
           <h1 className="font-mono justify-self-center p-10 text-2xl text-green-300 font-bold ">
-            <Link href="/creator">Create Event</Link>
+            <Link href="/creator">Create Merkle Tree</Link>
           </h1>
           <span className="font-mono px-10 text-green-300">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in aliquet turpis. Duis vehicula eros eget
@@ -20,7 +21,7 @@ export default function Page() {
             vitae elementum purus laoreet sit amet. Vestibulum ac lectus posuere neque tincidunt tincidunt. Curabitur
             suscipit erat est, eu placerat mi blandit ut.
           </span>
-          <CreateEventForm />
+          <CreateMerkleForm />
         </div>
       </div>
 
