@@ -1,6 +1,6 @@
 // "use client";
 import Link from "next/link";
-import CreateClaimForm from "../../../components/loyaltyHarvest/CreateClaimForm";
+import CreateClaimForm from "../../../components/loyalty-harvest/CreateClaimForm";
 
 export default function Page() {
   return (

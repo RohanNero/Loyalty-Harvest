@@ -1,6 +1,6 @@
 // "use client";
 import Link from "next/link";
-import CreateProofForm from "~~/components/loyaltyHarvest/CreateProofForm";
+import CreateProofForm from "~~/components/loyalty-harvest/CreateProofForm";
 
 export default function Page() {
   return (

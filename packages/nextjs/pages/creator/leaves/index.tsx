@@ -1,7 +1,7 @@
 // "use client";
 //import createLeaves from "../../../../backend/js/createLeaves";
 import Link from "next/link";
-import CreateLeavesForm from "~~/components/loyaltyHarvest/CreateLeavesForm";
+import CreateLeavesForm from "~~/components/loyalty-harvest/CreateLeavesForm";
 
 export default function Page() {
   return (

@@ -10,13 +10,16 @@ import React, { ChangeEvent, FormEvent, useState } from "react";
 export default function CreateMerkleForm() {
   // State to manage input values
   const [formData, setFormData] = useState({
-    leaves: [],
-  });
-  const [merkleData, setMerkleData] = useState({
+    leaves: "",
     tree: [],
     root: "",
+    loading: false,
   });
-  const [isLoading, setIsLoaing] = useState(false);
+  // const [formData, setFormData] = useState({
+  //   tree: [],
+  //   root: "",
+  // });
+  //const [isLoading, setIsLoading] = useState(false);
 
   // Function to handle input changes
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -29,21 +32,25 @@ export default function CreateMerkleForm() {
     e.preventDefault();
     try {
       //console.log("formData:", formData);
-      // fetch merkleData using `createMerkleAPI`
-      setIsLoaing(true);
-      setMerkleData({ tree: [], root: "" });
-      const merkleData = await fetch("/api/createMerkleAPI", {
+      // fetch formData using `createMerkleAPI`
+      setFormData({ ...formData, loading: true }); // Update loading state
+      //setFormData({ loading: true, tree: [], root: "" });
+      const leavesData: string[][] = formData.leaves
+        .split("],[") // Split by '],[' to get sub-arrays
+        .map(subArray => subArray.replace(/[\[\]]/g, "").split(",")); // Remove brackets and split by commas
+      const merkleData = await fetch("/api/createTreeAPI", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(leavesData),
       });
       const json = await merkleData.json();
-      console.log("MerkleData:", json);
-      setIsLoaing(false);
-      setMerkleData(json);
-      console.log("useState data:", merkleData);
+      console.log("formData:", json);
+      console.log(json.tree);
+      console.log("json root:", json.root);
+      setFormData({ ...formData, loading: false, tree: json.tree, root: json.root });
+      // console.log("useState data:", formData);
       // Return the result
       return json;
     } catch (error) {
@@ -53,7 +60,7 @@ export default function CreateMerkleForm() {
 
   // Function to handle copying leaves data to clipboard
   const copyToClipboard = () => {
-    const merkleText = JSON.stringify(merkleData.tree, null, 2); // Convert leaves data to a nicely formatted JSON string
+    const merkleText = JSON.stringify(formData.tree, null, 2); // Convert leaves data to a nicely formatted JSON string
     navigator.clipboard
       .writeText(merkleText)
       .then(() => {
@@ -65,7 +72,7 @@ export default function CreateMerkleForm() {
   };
   // Function to handle copying leaves data to clipboard
   const copyRootToClipboard = () => {
-    const merkleText = JSON.stringify(merkleData.root, null, 2); // Convert leaves data to a nicely formatted JSON string
+    const merkleText = JSON.stringify(formData.root, null, 2); // Convert leaves data to a nicely formatted JSON string
     navigator.clipboard
       .writeText(merkleText)
       .then(() => {
@@ -96,15 +103,15 @@ export default function CreateMerkleForm() {
         </button>
       </form>
       {/* Conditionally render the result */}
-      {merkleData.tree.length > 0 && merkleData.root !== "" && (
+      {formData.root !== "" && (
         <div className="mt-4 p-3 border border-purple-700 rounded bg-green-200">
           <h4 className="text-lg font-semibold text-purple-700 mb-2">Merkle Root:</h4>
-          <div className="text-lg font-semibold text-purple-400 mb-2">{merkleData.root} </div>
+          <div className="text-lg font-semibold text-purple-400 mb-2">{formData.root} </div>
         </div>
       )}
-      {isLoading && <div className="text-lg text-purple-700 font-semibold">Loading... </div>}
+      {formData.loading && <div className="text-lg text-purple-700 font-semibold">Loading... </div>}
       {/* Button to copy leaves data to clipboard */}
-      {merkleData.tree.length > 0 && merkleData.root !== "" && (
+      {formData.root !== "" && (
         <div className="flex gap-7">
           <button
             onClick={copyToClipboard}

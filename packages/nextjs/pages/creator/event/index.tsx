@@ -1,6 +1,6 @@
 // "use client";
 import Link from "next/link";
-import CreateEventForm from "../../../components/loyaltyHarvest/CreateEventForm";
+import CreateEventForm from "../../../components/loyalty-harvest/CreateEventForm";
 
 export default function Page() {
   return (

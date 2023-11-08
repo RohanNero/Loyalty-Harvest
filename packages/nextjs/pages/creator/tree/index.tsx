@@ -1,7 +1,7 @@
 // "use client";
 //import createLeaves from "../../../../backend/js/createLeaves";
 import Link from "next/link";
-import CreateMerkleForm from "~~/components/loyaltyHarvest/CreateMerkleForm";
+import CreateMerkleForm from "~~/components/loyalty-harvest/CreateMerkleForm";
 
 export default function Page() {
   return (

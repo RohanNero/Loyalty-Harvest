@@ -1,6 +1,6 @@
 // "use client";
 import Link from "next/link";
-import CreateSignatureForm from "~~/components/loyaltyHarvest/CreateSignatureForm";
+import CreateSignatureForm from "~~/components/loyalty-harvest/CreateSignatureForm";
 
 export default function Page() {
   return (
