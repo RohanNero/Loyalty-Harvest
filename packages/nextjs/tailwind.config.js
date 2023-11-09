@@ -9,6 +9,7 @@ module.exports = {
       {
         scaffoldEth: {
           "base-400": "#6EE7B7",
+          customColor: "#A7F3D0",
           primary: "#6EE7B7",
           "primary-content": "#212638",
           secondary: "#6EE7B7",
@@ -41,6 +42,7 @@ module.exports = {
       },
       {
         scaffoldEthDark: {
+          customColor: "#6EE7B7",
           primary: "#10B981",
           "primary-content": "#6EE7B7",
           secondary: "#10B981",
