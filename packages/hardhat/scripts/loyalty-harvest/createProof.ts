@@ -1,4 +1,6 @@
 import Web3 from "web3";
+// These two abi imports essentially do the same thing, one is .ts and one is .json
+// .ts may be better option, originally swapped to it to debug a type error
 // import { claimAbi } from "../../abi/ClaimV2.json";
 import claimAbi from "../../abi/Claim";
 import * as dotenv from "dotenv";
@@ -36,10 +38,11 @@ export default async function createProof(eventId: number, userAddress: string) 
   // Hardhat network cries like a baby if you try to call the function like this
   //const eventData = await claimContract.methods.viewEvent(eventId).call();
 
-  // This function call should take `eventId` as an argument but ESLint errors when I try...
+  // This function call should take `eventId` as an argument but yarn next type check errors when I try...
   //const txData = claimContract.methods.viewEvent();
   //const txData = claimContract.methods["viewEvent(uint256)"](eventId);
   // const txData = claimContract.methods["0x24923f5f"](eventId);
+  // This "ugly" fix was found here: https://github.com/web3/web3.js/issues/6275#issuecomment-1650199729
   const txData = (claimContract.methods.viewEvent as any)(eventId);
   // Hardhat network little baby version
   const transactionObject = {
