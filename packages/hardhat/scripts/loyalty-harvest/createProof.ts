@@ -44,14 +44,15 @@ export default async function createProof(eventId: number, userAddress: string) 
   // const txData = claimContract.methods["0x24923f5f"](eventId);
   // This "ugly" fix was found here: https://github.com/web3/web3.js/issues/6275#issuecomment-1650199729
   const txData = (claimContract.methods.viewEvent as any)(eventId);
-  // Hardhat network little baby version
+
+  // Create the transaction object to be sent
   const transactionObject = {
     to: claimContract.options.address!,
     data: txData.encodeABI(), // Encode the function call
   };
 
-  // This code comment is on line 43
-  const eventData = await web3.eth.call(transactionObject as any); // Assuming you have a 'web3' instance
+  // Make the actual functioin call
+  const eventData = await web3.eth.call(transactionObject as any);
   console.log("eventData:", eventData);
   // depreciated
   //console.log("blockStart:", eventData.startBlock);
