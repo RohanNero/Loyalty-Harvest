@@ -128,7 +128,7 @@ export default function CreateProofForm() {
         </div>
       )}
       {/* Conditionally render the proof in a paginated table */}
-      {proof && proof.proof.length > 0 && (
+      {proof && proof?.proof?.length > 0 && (
         <div className="mt-4">
           {/* <h4 className="text-lg font-semibold text-purple-400 mb-2">Proof:</h4> */}
           <div className="overflow-x-auto">
@@ -140,7 +140,7 @@ export default function CreateProofForm() {
                 </tr>
               </thead>
               <tbody>
-                {proof.proof.map((entry, index) => (
+                {proof.proof?.map((entry, index) => (
                   <tr key={index}>
                     <td className="border border-purple-300 p-2 text-green-500">
                       {entry.Value?.map((value: any, i: number) => (
@@ -159,7 +159,7 @@ export default function CreateProofForm() {
           </div>
           {/* Pagination */}
           <div className="mt-4">
-            {proof && proof.proof && proof.proof.length > itemsPerPage && (
+            {proof && proof?.proof && proof?.proof?.length > itemsPerPage && (
               <ul className="flex space-x-2">
                 {Array.from({ length: Math.ceil(proof.proof.length / itemsPerPage) }).map((_, index) => (
                   <li

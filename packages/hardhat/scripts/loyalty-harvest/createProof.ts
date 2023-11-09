@@ -1,5 +1,6 @@
 import Web3 from "web3";
-import { claimAbi } from "../../abi/ClaimV2.json";
+// import { claimAbi } from "../../abi/ClaimV2.json";
+import claimAbi from "../../abi/Claim";
 import * as dotenv from "dotenv";
 dotenv.config({ path: "/home/trauki/portfolio/ScaffoldLoyaltyHarvest/packages/hardhat/.env" });
 import createLeaves from "./createLeaves";
@@ -35,9 +36,11 @@ export default async function createProof(eventId: number, userAddress: string) 
   // Hardhat network cries like a baby if you try to call the function like this
   //const eventData = await claimContract.methods.viewEvent(eventId).call();
 
-  const txData = claimContract.methods.viewEvent();
+  // This function call should take `eventId` as an argument but ESLint errors when I try...
+  //const txData = claimContract.methods.viewEvent();
   //const txData = claimContract.methods["viewEvent(uint256)"](eventId);
-
+  // const txData = claimContract.methods["0x24923f5f"](eventId);
+  const txData = (claimContract.methods.viewEvent as any)(eventId);
   // Hardhat network little baby version
   const transactionObject = {
     to: claimContract.options.address!,
