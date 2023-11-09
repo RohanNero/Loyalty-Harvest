@@ -27,7 +27,7 @@ import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
  * leaves - all of the leaves to build the tree with
  * structure - array of strings describing the types inside the leaves
  */
-export default async function createMerkle(leaves: string[]) {
+export default async function createMerkle(leaves: string[][]) {
   console.log("createTree Input:");
   console.log("leaves:", leaves);
   //console.log("structure:", structure);

@@ -35,15 +35,12 @@ export default function CreateMerkleForm() {
       // fetch formData using `createMerkleAPI`
       setFormData({ ...formData, loading: true }); // Update loading state
       //setFormData({ loading: true, tree: [], root: "" });
-      const leavesData: string[][] = formData.leaves
-        .split("],[") // Split by '],[' to get sub-arrays
-        .map(subArray => subArray.replace(/[\[\]]/g, "").split(",")); // Remove brackets and split by commas
       const merkleData = await fetch("/api/createTreeAPI", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(leavesData),
+        body: JSON.stringify(formData),
       });
       const json = await merkleData.json();
       console.log("formData:", json);
