@@ -7,6 +7,7 @@ import { SwitchTheme } from "~~/components/SwitchTheme";
 import { BuidlGuidlLogo } from "~~/components/assets/BuidlGuidlLogo";
 import { Faucet } from "~~/components/scaffold-eth";
 import { useGlobalState } from "~~/services/store/store";
+// get current network
 import { getTargetNetwork } from "~~/utils/scaffold-eth";
 
 /**

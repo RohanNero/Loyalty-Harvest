@@ -11,7 +11,7 @@ import Link from "next/link";
 export default function Home() {
   return (
     // <div className="flex min-h-screen flex-col items-center justify-start bg-green-200 ">
-    <div className="border flex flex-col rounded w-full text-center pt-10 bg-[#6EE7B7]">
+    <div className="border flex flex-col rounded w-full text-center pt-10 bg-secondary">
       {/* <div className="pt-4 w-full font-mono text-lg text-center bg-gradient-to-b from-green-200 to-green-600 flex justify-between items-center border-b-2 border-green-800">
         <div className="border-2 border-green-500 rounded-xl hover:border-purple-600 bg-gradient-to-r from-green-300 to-purple-400 text-purple-600 from-30% hover:to-purple-800 hover:from-green-600 hover:text-green-300 hover:shadow-lg py-3 px-7 font-mono ml-64 rounded">
           Loyalty Harvest
@@ -21,7 +21,7 @@ export default function Home() {
         </div>
       </div> */}
 
-      <h1 className="text-xl font-mono text-[#6EE7B7] bg-[#10B981] p-3 mb-10 border border-purple-700 rounded-lg mx-auto w-1/5">
+      <h1 className="text-xl font-mono text-secondary bg-base-100 p-3 mb-10 rounded-lg mx-auto w-1/5">
         Which one are you?
       </h1>
       <div className="flex justify-center gap-[37%]">
@@ -36,7 +36,7 @@ export default function Home() {
       </div>
 
       {/* User and Organizer components */}
-      <div className="flex justify-evenly font-mono bg-[#6EE7B7] py-16 w-full h-[69vh]">
+      <div className="flex justify-evenly font-mono bg-secondary py-16 w-full h-[69vh]">
         {/* User component */}
         <Link className="w-1/3 " href="/user">
           {/* Gold coin 1 container */}

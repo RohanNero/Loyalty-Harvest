@@ -15,10 +15,9 @@ export default function Page() {
           </h1>
           <div className="w-3/4">
             <span className="font-mono px-10 text-[#10B981]">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in aliquet turpis. Duis vehicula eros eget
-              purus ultricies vulputate. Nunc vitae malesuada odio, eleifend facilisis orci. Cras vehicula luctus diam,
-              vitae elementum purus laoreet sit amet. Vestibulum ac lectus posuere neque tincidunt tincidunt. Curabitur
-              suscipit erat est, eu placerat mi blandit ut.
+              Welcome to the Creator dashboard! From here you can use the buttons below to create your own Reward Event.
+              To get started you can can create an array of leaves for your desired NFT contract, starting block number,
+              and ending block number
             </span>
           </div>
           <div className="flex flex-row gap-3">
