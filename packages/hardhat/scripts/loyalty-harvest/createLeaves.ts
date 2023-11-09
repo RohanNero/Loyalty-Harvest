@@ -12,7 +12,7 @@ dotenv.config({ path: "/home/trauki/portfolio/ScaffoldLoyaltyHarvest/packages/ha
 //const url = "https://eth-sepolia.g.alchemy.com/v2/demo"; // exceeded concurrent requests capacity <-- ALCHEMY
 //const url = "https://eth-sepolia.g.alchemy.com/v2/" + process.env.SEPOLIA_RPC_URL;
 
-const testing = false;
+const testing = true;
 let url;
 //let senderAddress;
 if (testing) {
