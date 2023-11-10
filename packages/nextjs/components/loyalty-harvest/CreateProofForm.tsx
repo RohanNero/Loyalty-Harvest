@@ -91,13 +91,13 @@ export default function CreateProofForm() {
 
   return (
     <div className="bg-green-300 font-mono py-3 mb-4 w-1/2 flex-col flex items-center justify-center w-2/3">
-      <h3 className="text-xl text-purple-400 justify-self-center mb-4">Create Merkle Proof</h3>
+      <h3 className="text-xl text-[#10B981] justify-self-center mb-4">Create Merkle Proof</h3>
       <form className="text-center w-full flex flex-col gap-2 items-center justify-center" onSubmit={handleSubmit}>
         <input
           type="text"
           name="eventId"
           placeholder="Event Id"
-          className="border border-purple-500 p-1.5 text-green-400 focus:ring-0 rounded w-2/3 bg-purple-200 hover:bg-purple-300"
+          className="border p-1.5 text-green-400 focus:ring-0 rounded w-2/3 bg-green-200 hover:bg-green-300"
           value={formData.eventId}
           onChange={handleInputChange}
         />
@@ -105,13 +105,13 @@ export default function CreateProofForm() {
           type="text"
           name="holder"
           placeholder="Holder address"
-          className="border border-purple-500 p-1.5 text-green-400 focus:ring-0 rounded w-2/3 bg-purple-200 hover:bg-purple-300"
+          className="border  p-1.5 text-green-400 focus:ring-0 rounded w-2/3 bg-green-200 hover:bg-green-300"
           value={formData.holder}
           onChange={handleInputChange}
         />
         <button
           type="submit"
-          className="bg-purple-700 border-purple-800 border hover:text-green-300 rounded my-2 px-4 py-2 bg-gradient-to-r  hover:from-green-400 hover:to-purple-700 to-purple-500 from-green-300 text-purple-600 hover:shadow-lg hover:-translate-y-1   hover:bg-green-300 w-1/2"
+          className="bg-purple-700 border  rounded my-2 px-4 py-2 bg-gradient-to-r from-secondary via-green-200 to-secondary hover:from-secondary hover:to-secondary text-secondary hover:text-base-100 hover:shadow-lg hover:-translate-y-1  hover:bg-green-300 w-1/2"
         >
           Create
         </button>

@@ -158,7 +158,7 @@ export default function CreateEventForm() {
   };
 
   return (
-    <div className="bg-purple-400 font-mono py-3 mb-4 w-1/2 flex-col flex items-center justify-center w-2/3">
+    <div className="bg-secondary font-mono py-3 mb-4 w-1/2 flex-col flex items-center justify-center w-2/3">
       <h3 className="text-xl text-green-300 justify-self-center mb-4">Create Reward Event</h3>
       <form className="text-center w-full grid grid-cols-2 gap-2 items-center justify-center" onSubmit={handleSubmit}>
         <div className="col-span-1">
@@ -166,7 +166,7 @@ export default function CreateEventForm() {
             type="text"
             name="nftContract"
             placeholder="NFT Contract Address"
-            className="border border-purple-500 p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
+            className="border  p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
             value={formData.nftContract}
             onChange={handleInputChange}
           />
@@ -176,7 +176,7 @@ export default function CreateEventForm() {
             type="text"
             name="rewardToken"
             placeholder="Reward Token Address"
-            className="border border-purple-500 p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
+            className="border  p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
             value={formData.rewardToken}
             onChange={handleInputChange}
           />
@@ -186,7 +186,7 @@ export default function CreateEventForm() {
             type="text"
             name="rewardAmount"
             placeholder="Reward Token Amount"
-            className="border border-purple-500 p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
+            className="border  p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
             value={formData.rewardAmount}
             onChange={handleInputChange}
           />
@@ -196,7 +196,7 @@ export default function CreateEventForm() {
             type="text"
             name="creator"
             placeholder="Creator Address"
-            className="border border-purple-500 p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
+            className="border  p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
             value={formData.creator}
             onChange={handleInputChange}
           />
@@ -206,7 +206,7 @@ export default function CreateEventForm() {
             type="text"
             name="root"
             placeholder="Merkle Root"
-            className="border border-purple-500 p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover-bg-green-300"
+            className="border  p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
             value={formData.root}
             onChange={handleInputChange}
           />
@@ -216,7 +216,7 @@ export default function CreateEventForm() {
             type="text"
             name="blockStart"
             placeholder="Block starting number"
-            className="border border-purple-500 p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
+            className="border  p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
             value={formData.blockStart}
             onChange={handleInputChange}
           />
@@ -226,7 +226,7 @@ export default function CreateEventForm() {
             type="text"
             name="blockEnd"
             placeholder="Block ending number"
-            className="border border-purple-500 p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
+            className="border  p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
             value={formData.blockEnd}
             onChange={handleInputChange}
           />
@@ -236,7 +236,7 @@ export default function CreateEventForm() {
             type="text"
             name="nfts"
             placeholder="Amount of NFTs"
-            className="border border-purple-500 p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
+            className="border  p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
             value={formData.nfts}
             onChange={handleInputChange}
           />
@@ -246,7 +246,7 @@ export default function CreateEventForm() {
             type="text"
             name="totalHeld"
             placeholder="Total blocks held"
-            className="border border-purple-500 p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
+            className="border  p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
             value={formData.totalHeld}
             onChange={handleInputChange}
           />
@@ -254,7 +254,7 @@ export default function CreateEventForm() {
         <div className="col-span-1">
           <button
             type="submit"
-            className="bg-purple-700 border-purple-800 border text-green-300 rounded my-2 px-4 py-2 bg-gradient-to-r from-green-400 to-purple-700 hover:to-purple-500 hover:from-green-300 hover:text-purple-600 hover:shadow-lg hover:-translate-y-1   hover:bg-green-300 w-full"
+            className="bg-secondary  border text-base-100 rounded my-2 px-4 py-2 bg-gradient-to-r from-green-200 via-secondary to-green-200 hover:via-green-200 hover:to-green-200 hover:shadow-lg hover:-translate-y-1   hover:bg-green-300 w-full"
           >
             Create
           </button>

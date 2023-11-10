@@ -132,14 +132,14 @@ export default function CreateClaimForm() {
 
   return (
     <div className="bg-green-300 font-mono py-3 mb-4 w-1/2 flex-col flex items-center justify-center w-2/3">
-      <h3 className="text-xl text-purple-400 justify-self-center mb-4">Create Reward Event</h3>
+      <h3 className="text-xl text-[#10B981] justify-self-center mb-4">Create Reward Event</h3>
       <form className="text-center w-full grid grid-cols-2 gap-2 items-center justify-center" onSubmit={handleSubmit}>
         <div className="col-span-1">
           <input
             type="text"
             name="proof"
             placeholder="Proof"
-            className="border border-green-500 p-1.5 text-green-400 focus:ring-0 rounded w-full bg-purple-200 hover:bg-purple-300"
+            className="border border-green-500 p-1.5 text-green-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
             value={data.proof}
             onChange={handleInputChange}
           />
@@ -149,7 +149,7 @@ export default function CreateClaimForm() {
             type="text"
             name="holder"
             placeholder="Holder address"
-            className="border border-green-500 p-1.5 text-green-400 focus:ring-0 rounded w-full bg-purple-200 hover:bg-purple-300"
+            className="border border-green-500 p-1.5 text-green-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
             value={data.holder}
             onChange={handleInputChange}
           />
@@ -159,7 +159,7 @@ export default function CreateClaimForm() {
             type="text"
             name="to"
             placeholder="To address"
-            className="border border-green-500 p-1.5 text-green-400 focus:ring-0 rounded w-full bg-purple-200 hover:bg-purple-300"
+            className="border border-green-500 p-1.5 text-green-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
             value={data.to}
             onChange={handleInputChange}
           />
@@ -169,7 +169,7 @@ export default function CreateClaimForm() {
             type="text"
             name="eventId"
             placeholder="Event Id"
-            className="border border-green-500 p-1.5 text-green-400 focus:ring-0 rounded w-full bg-purple-200 hover:bg-purple-300"
+            className="border border-green-500 p-1.5 text-green-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
             value={data.eventId}
             onChange={handleInputChange}
           />
@@ -179,7 +179,7 @@ export default function CreateClaimForm() {
             type="text"
             name="tokenId"
             placeholder="Token Id"
-            className="border border-green-500 p-1.5 text-green-400 focus:ring-0 rounded w-full bg-purple-200 hover-bg-purple-300"
+            className="border border-green-500 p-1.5 text-green-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
             value={data.tokenId}
             onChange={handleInputChange}
           />
@@ -189,7 +189,7 @@ export default function CreateClaimForm() {
             type="text"
             name="heldUntil"
             placeholder="Held until"
-            className="border border-green-500 p-1.5 text-green-400 focus:ring-0 rounded w-full bg-purple-200 hover-bg-purple-300"
+            className="border border-green-500 p-1.5 text-green-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
             value={data.heldUntil}
             onChange={handleInputChange}
           />
@@ -199,7 +199,7 @@ export default function CreateClaimForm() {
             type="text"
             name="signature"
             placeholder="Signature"
-            className="border border-green-500 p-1.5 text-green-400 focus:ring-0 rounded w-full bg-purple-200 hover-bg-purple-300"
+            className="border border-green-500 p-1.5 text-green-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
             value={data.signature}
             onChange={handleInputChange}
           />
@@ -207,7 +207,7 @@ export default function CreateClaimForm() {
         <div className="col-span-1">
           <button
             type="submit"
-            className="bg-purple-700 border-purple-800 border hover:text-green-300 rounded my-2 px-4 py-2 bg-gradient-to-r hover:from-green-400 hover:to-purple-700 to-purple-500 from-green-300 text-purple-600 hover:shadow-lg hover:-translate-y-1   hover:bg-green-300 w-full"
+            className="bg-purple-700 border rounded my-2 px-4 py-2 bg-gradient-to-r from-secondary via-green-200 to-secondary hover:from-secondary hover:to-secondary text-secondary hover:text-base-100 hover:shadow-lg hover:-translate-y-1 hover:bg-green-300 w-full"
           >
             Create
           </button>

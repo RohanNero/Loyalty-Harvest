@@ -14,25 +14,25 @@ export default function Page() {
             <Link href="/organizer">Creator</Link>
           </h1>
           <div className="w-3/4">
-            <span className="font-mono px-10 text-base-100">
-              Welcome to the Creator dashboard! From here you can use the buttons below to create your own Reward Event.
-              To get started you can can create an array of leaves for your desired NFT contract, starting block number,
-              and ending block number
+            <span className="font-mono px-10 text-center text-base-100">
+              Welcome to the Creator dashboard! <br />
+              From here you can use the buttons below to create your own Reward Event. To get started you can can create
+              an array of leaves for your desired NFT contract, starting block number, and ending block number
             </span>
           </div>
           <div className="flex flex-row gap-3">
             <Link href="/creator/leaves">
-              <div className="text-lg font-mono border rounded  bg-gradient-to-r from-green-200 to-[#6EE7B7] text-[#10B981] hover:to-purple-800 hover:from-green-600 hover:text-green-300 hover:shadow-lg hover:-translate-y-1 p-1">
+              <div className="text-lg font-mono border rounded  bg-gradient-to-r from-green-200 to-[#6EE7B7] text-[#10B981] hover:to-green-200 hover:from-green-200 hover:shadow-lg hover:-translate-y-1 p-1">
                 Create Leaves
               </div>
             </Link>
             <Link href="/creator/tree">
-              <div className="text-lg font-mono border rounded  bg-[#6EE7B7] text-[#10B981] hover:to-purple-800 hover:from-green-600 hover:text-green-300 hover:shadow-lg hover:-translate-y-1 p-1">
+              <div className="text-lg font-mono border rounded  bg-[#6EE7B7] text-[#10B981] hover:bg-green-200 hover:shadow-lg hover:-translate-y-1 p-1">
                 Create Merkle
               </div>
             </Link>
             <Link href="/creator/event">
-              <div className="text-lg font-mono border rounded  bg-gradient-to-r from-[#6EE7B7] to-green-200 text-[#10B981] hover:to-purple-800 hover:from-green-600 hover:text-green-300 hover:shadow-lg hover:-translate-y-1 p-1">
+              <div className="text-lg font-mono border rounded  bg-gradient-to-r from-[#6EE7B7] to-green-200 text-[#10B981] hover:to-green-200 hover:from-green-200 hover:shadow-lg hover:-translate-y-1 p-1">
                 Create Event
               </div>
             </Link>

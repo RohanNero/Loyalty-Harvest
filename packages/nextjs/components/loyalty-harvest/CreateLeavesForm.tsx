@@ -127,14 +127,14 @@ export default function CreateLeavesForm() {
   };
 
   return (
-    <div className="bg-purple-400 font-mono py-3 mb-4 w-1/2 flex-col flex items-center justify-center w-2/3">
-      <h3 className="text-xl text-green-300 justify-self-center mb-4">Create Leaves</h3>
+    <div className="bg-secondary font-mono py-3 mb-4 w-1/2 flex-col flex items-center justify-center w-2/3">
+      <h3 className="text-xl text-base-100 justify-self-center mb-4">Create Leaves</h3>
       <form className="text-center w-full flex flex-col gap-2 items-center justify-center" onSubmit={handleSubmit}>
         <input
           type="string"
           name="nftAddress"
           placeholder="NFT contract address"
-          className="border border-purple-500 p-1.5 text-purple-400 focus:ring-0  rounded w-2/3 bg-green-200 hover:bg-green-300"
+          className="border p-1.5 text-purple-400 focus:ring-0  rounded w-2/3 bg-green-200 hover:bg-green-300"
           value={formData.nftAddress}
           onChange={handleInputChange}
         />
@@ -143,7 +143,7 @@ export default function CreateLeavesForm() {
           type="number"
           name="blockStart"
           placeholder="Starting block number"
-          className="border border-purple-500 p-1.5 text-purple-400 focus:ring-0 rounded w-2/3 bg-green-200 hover:bg-green-300"
+          className="border p-1.5 text-purple-400 focus:ring-0 rounded w-2/3 bg-green-200 hover:bg-green-300"
           value={formData.blockStart}
           onChange={handleInputChange}
         />
@@ -152,7 +152,7 @@ export default function CreateLeavesForm() {
           type="number"
           name="blockEnd"
           placeholder="Ending block number"
-          className="border border-purple-500 p-1.5 text-purple-400 focus:ring-0 rounded w-2/3 bg-green-200 hover:bg-green-300"
+          className="border p-1.5 text-purple-400 focus:ring-0 rounded w-2/3 bg-green-200 hover:bg-green-300"
           value={formData.blockEnd}
           onChange={handleInputChange}
         />
@@ -161,14 +161,14 @@ export default function CreateLeavesForm() {
           type="number"
           name="totalSupply"
           placeholder="Total amount of NFTs"
-          className="border border-purple-500 p-1.5 text-purple-400 focus:ring-0 rounded w-2/3 bg-green-200 hover:bg-green-300"
+          className="border p-1.5 text-purple-400 focus:ring-0 rounded w-2/3 bg-green-200 hover:bg-green-300"
           value={formData.totalSupply}
           onChange={handleInputChange}
         />
 
         <button
           type="submit"
-          className="bg-purple-700 border-purple-800 border text-green-300 rounded my-2 px-4 py-2 bg-gradient-to-r from-green-400 to-purple-700 hover:to-purple-500 hover:from-green-300 hover:text-purple-600 hover:shadow-lg hover:-translate-y-1   hover:bg-green-300 w-1/2"
+          className="bg-purple-700 border text-base-100 rounded my-2 px-4 py-2 bg-gradient-to-r from-green-200 via-secondary to-green-200 hover:via-green-200 hover:to-green-200 hover:shadow-lg hover:-translate-y-1  w-1/2"
         >
           Create
         </button>
