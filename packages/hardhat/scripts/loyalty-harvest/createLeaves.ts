@@ -1,6 +1,8 @@
 import * as dotenv from "dotenv";
 import Web3 from "web3";
 import { nftAbi } from "../../abi/NFT.json";
+// import { getTargetNetwork } from "~~/utils/scaffold-eth";
+import getRpc from "../getRpc";
 
 dotenv.config({ path: "/home/trauki/portfolio/ScaffoldLoyaltyHarvest/packages/hardhat/.env" });
 
@@ -12,17 +14,23 @@ dotenv.config({ path: "/home/trauki/portfolio/ScaffoldLoyaltyHarvest/packages/ha
 //const url = "https://eth-sepolia.g.alchemy.com/v2/demo"; // exceeded concurrent requests capacity <-- ALCHEMY
 //const url = "https://eth-sepolia.g.alchemy.com/v2/" + process.env.SEPOLIA_RPC_URL;
 
-const testing = true;
-let url;
-//let senderAddress;
-if (testing) {
-  url = "http://127.0.0.1:8545/";
-  //senderAddress = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
-} else {
-  url = "https://eth-sepolia.g.alchemy.com/v2/" + process.env.ALCHEMY_API_KEY;
-  // senderAddress = "0xe4A98D2bFD66Ce08128FdFFFC9070662E489a28E";
-}
-const web3 = new Web3(url);
+/** REVISION
+ * The hard-coded variables resolving around `testing` boolean will be upated to use current chain
+ */
+// console.log("network:", getTargetNetwork());
+// const network = getTargetNetwork();
+// const testing = true;
+// let url;
+// //let senderAddress;
+// if (network.id == 31337) {
+//   url = "http://127.0.0.1:8545/";
+//   //senderAddress = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
+// } else if(network.id == ) {
+//   url = "https://eth-sepolia.g.alchemy.com/v2/" + process.env.ALCHEMY_API_KEY;
+//   // senderAddress = "0xe4A98D2bFD66Ce08128FdFFFC9070662E489a28E";
+// }
+console.log("rpc:", await getRpc());
+const web3 = new Web3(await getRpc());
 // Used to view the NFT holders at `blockStart`
 // This worked perfectly on Sepolia, but returned an error on Anvil and Hardhat network.
 /*async function getOwnerAtBlock(nftContract: any, tokenId: number, blockNumber: number) {
