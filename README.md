@@ -6,6 +6,8 @@ The goal of this project is to allow anyone to create a `reward event` for **any
 
 Incentivizes users to hold NFTs that they currently own, and other users to buy an NFT if they don't hold one.
 
+[Inspiration for Loyalty Harvest](https://ethereum.stackexchange.com/q/154207/97149)
+
 ### Tech
 
 Under the hood this project consists of a few different pieces:
