@@ -11,13 +11,16 @@ export default function Page() {
       <div className="w-3/5 bg-secondary ">
         <div className="mt-[14vh] items-center justify-self-center flex flex-col w-full">
           <h1 className="font-mono justify-self-center p-10 text-2xl text-base-100 font-bold ">
-            <Link href="/organizer">Creator</Link>
+            <button className="border rounded px-8 py-3 hover:-translate-y-2 hover:shadow-lg text-secondary bg-base-100">
+              <Link href="/creator">Creator</Link>
+            </button>
           </h1>
-          <div className="w-3/4">
+          <div className="w-3/4 mb-4">
             <span className="font-mono px-10 text-center text-base-100">
               Welcome to the Creator dashboard! <br />
               From here you can use the buttons below to create your own Reward Event. To get started you can can create
-              an array of leaves for your desired NFT contract, starting block number, and ending block number
+              an array of leaves for your desired NFT contract, then you can construct a merkle tree using the leaves.
+              Once you have done these two things, you are ready to create the actual reward event!
             </span>
           </div>
           <div className="flex flex-row gap-3">

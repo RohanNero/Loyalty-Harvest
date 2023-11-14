@@ -13,13 +13,13 @@ export default function Page() {
       <div className="w-3/5 bg-secondary">
         <div className="mt-[14vh] items-center justify-self-center flex flex-col w-full">
           <h1 className="font-mono justify-self-center p-10 text-2xl text-base-100 font-bold ">
-            <Link href="/creator">Create Merkle Tree</Link>
+            <button className="border rounded px-8 py-3 hover:-translate-y-2 hover:shadow-lg text-secondary bg-base-100">
+              <Link href="/creator">Creator</Link>
+            </button>
           </h1>
           <span className="font-mono px-10 text-base-100">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in aliquet turpis. Duis vehicula eros eget
-            purus ultricies vulputate. Nunc vitae malesuada odio, eleifend facilisis orci. Cras vehicula luctus diam,
-            vitae elementum purus laoreet sit amet. Vestibulum ac lectus posuere neque tincidunt tincidunt. Curabitur
-            suscipit erat est, eu placerat mi blandit ut.
+            Once you have created merkle leaves, you can use this form to construct your very own merkle tree! All you
+            need to do is pass the leaves object!
           </span>
           <CreateMerkleForm />
         </div>
