@@ -16,5 +16,10 @@
 
 ## Create Merkle
 
-The command behind this needs to be updated to approve the reward token before it can be `transferFrom`'d to the `Claim.sol` contract.
-Also we should ensure that users may send
+1. The command behind this needs to be updated to approve the reward token before it can be `transferFrom`'d to the `Claim.sol` contract.
+   Also we should ensure that users may send
+
+## Create Claim
+
+1. Don't make users input `heldUntil`, this can be calculated using the rest of the input.
+   - we need a new script `getHeldUntil`, this will take the holder's address, the nft address, and the block start/end.
