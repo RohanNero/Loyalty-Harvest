@@ -1,10 +1,7 @@
-import createProof from "../../../hardhat/scripts/loyalty-harvest/createProof";
+import createProof from "../../utils/loyalty-harvest/createProof";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function createProofAPI(req: NextApiRequest, res: NextApiResponse) {
-  //   console.log("req:", req.body);
-  //   console.log("API parameters:");
-
   const { eventId, holder } = req.body;
   console.log("eventId:", eventId);
   console.log("holder:", holder);

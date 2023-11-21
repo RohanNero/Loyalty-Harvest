@@ -64,7 +64,7 @@ export default async function createLeaves(
   // Loop through NFTs and set initial leaf data
   for (let tokenId = 0; tokenId < totalSupply; tokenId++) {
     const holderAddress = await getOwnerAtBlock(nftAddress, tokenId, blockStart);
-    const initialLeafData = [holderAddress, nftAddress, tokenId.toString(), blockEnd]; // Default heldUntil as blockEnd
+    const initialLeafData = [holderAddress, nftAddress, tokenId.toString(), blockEnd.toString()]; // Default heldUntil as blockEnd
     leaves.push(initialLeafData);
   }
 

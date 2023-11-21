@@ -1,29 +1,22 @@
 "use client";
 
 import React, { ChangeEvent, FormEvent, useState } from "react";
-
-//import createLeaves from "../../backend/js/createLeaves";
-// Route handler api call, not sure how to use route handlers currently lol
-//import { POST } from "../src/app/api/route";
-// Used to ensure that the call suceeds past `exceeded rate limit` error
+import { createWalletClient, custom } from "viem";
 
 export default function CreateSignatureForm() {
-  // State to manage input values
-  // testing using one use State for all three
+  // State to manage input, output, and loading state values
   const [data, setData] = useState({
     address: "",
     signature: "",
     loading: false,
   });
-  //const [signature, setSignature] = useState("");
-  //const [isLoading, setIsLoaing] = useState(false);
 
   // Function to handle input changes
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { value } = e.target;
     setData(prevData => ({
       ...prevData,
-      [name]: value,
+      address: value,
     }));
   };
 
@@ -31,44 +24,47 @@ export default function CreateSignatureForm() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      console.log("preData:", data);
-      //console.log("formData:", formData);
-      // fetch merkleData using `createMerkleAPI`
       setData(prevData => ({
         ...prevData,
         signature: "",
         loading: true,
       }));
-      console.log("data:", data);
-      console.log("addy:", data.address);
-      const fetchedData = await fetch("/api/createSignatureAPI", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
+
+      if (!window.ethereum) {
+        console.error("window.ethereum is undefined");
+        return;
+      }
+
+      const [account] = await window.ethereum.request({
+        method: "eth_requestAccounts",
       });
-      const json = await fetchedData.json();
-      console.log("signature JSON:", json);
-      console.log("siggy:", json.sig);
+
+      const walletClient = createWalletClient({
+        account,
+        transport: custom(window.ethereum),
+      });
+
+      console.log("signing with:", data.address);
+      const signature = await walletClient.signMessage({
+        message: data.address,
+      });
+      console.log("signature:", signature);
+
       setData(prevData => ({
         ...prevData,
-        signature: json.sig,
+        signature: signature,
         loading: false,
       }));
-      console.log("useData:", data);
-      // Return the result
-      return json;
+      return signature;
     } catch (error) {
       console.error("Error:", error);
     }
   };
 
-  // Function to handle copying leaves data to clipboard
+  // Function for copying signature to clipboard
   const copySignature = () => {
-    const signatureText = JSON.stringify(data.signature, null, 2); // Convert leaves data to a nicely formatted JSON string
     navigator.clipboard
-      .writeText(signatureText)
+      .writeText(data.signature)
       .then(() => {
         console.log("Signature copied to clipboard!");
       })
@@ -96,7 +92,7 @@ export default function CreateSignatureForm() {
           Create
         </button>
       </form>
-      {/* Conditionally render the result */}
+      {/* Conditionally render the signature */}
       {data && data.signature?.length > 0 && (
         <div className="w-1/2 mt-4 p-3 border  rounded bg-green-200">
           <h4 className="text-lg font-semibold text-purple-700 mb-2">Signature:</h4>
