@@ -15,16 +15,16 @@ const nextConfig = {
     //config.externals.push("pino-pretty", "lokijs", "encoding");
 
     // Add TypeScript loader
-    config.module.rules.push({
-      test: /\.ts(x?)$/,
-      exclude: /node_modules/,
-      use: {
-        loader: "ts-loader",
-        options: {
-          transpileOnly: true,
-        },
-      },
-    });
+    // config.module.rules.push({
+    //   test: /\.ts(x?)$/,
+    //   exclude: /node_modules/,
+    //   use: {
+    //     loader: "ts-loader",
+    //     options: {
+    //       transpileOnly: true,
+    //     },
+    //   },
+    // });
 
     return config;
   },
