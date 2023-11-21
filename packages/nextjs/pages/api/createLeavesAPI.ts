@@ -1,4 +1,5 @@
-import createLeaves from "../../../hardhat/scripts/loyalty-harvest/createLeaves";
+// import createLeaves from "../../../hardhat/scripts/loyalty-harvest/createLeaves";
+import createLeaves from "../../utils/loyalty-harvest/createLeaves";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function createLeavesAPI(req: NextApiRequest, res: NextApiResponse) {
