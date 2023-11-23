@@ -1,17 +1,14 @@
 "use client";
 
 import React, { ChangeEvent, FormEvent, useState } from "react";
-import { useAccount } from "wagmi";
+import { Address, createWalletClient, custom, encodeFunctionData } from "viem";
+import { sepolia } from "viem/chains";
+import "viem/window";
+
+//import { claimAbi } from "~~/abi/Claim";
+// import { useAccount } from "wagmi";
 // import { useScaffoldContractRead, useScaffoldContractWrite, useScaffoldEventSubscriber } from "~~/hooks/scaffold-eth";
-import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
-
-//import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
-
-//import createLeaves from "../../backend/js/createLeaves";
-// Route handler api call, not sure how to use route handlers currently lol
-//import { POST } from "../src/app/api/route";
-// Used to ensure that the call suceeds past `exceeded rate limit` error
-//import retry from "async-retry";
+// import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 
 /** This function creates a `RewardEvent` by calling `createRewardEvent` in the `Claim.sol` contract
  *
@@ -37,9 +34,11 @@ import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
   1. We probably don't need to pass `root` since we can calculate it from the tree, more explicit but not needed.
   */
 export default function CreateEventForm() {
-  const { address } = useAccount();
-  console.log("address:", address);
+  // const { address } = useAccount();
+  // console.log("address:", address);
+
   // State to manage input values
+  const [account, setAccount] = useState<Address>();
   const [formData, setFormData] = useState({
     nftContract: "",
     rewardToken: "",
@@ -66,63 +65,102 @@ export default function CreateEventForm() {
     setFormData({ ...formData, [name]: value }); // Split the input value into an array
   };
 
-  // Function to handle form submission
-  // const handleSubmit = async e => {
-  //   console.log("prevent");
-  //   e.preventDefault();
-  //   console.log("default prevented");
-  //   try {
-  //     //console.log("formData:", formData);
-  //     // `fetch` eventData using `createMerkleAPI`
-  //     setIsLoaing(true);
-  //     setEventData(undefined);
-  //     const eventData = await fetch("/api/createEventAPI", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify(formData),
-  //     });
-  //     const json = await eventData.json();
-  //     console.log("EventData:", json);
-  //     setIsLoaing(false);
-  //     setEventData(json);
-  //     console.log("useState data:", eventData);
-  //     // Return the result
-  //     return json;
-  //   } catch (error) {
-  //     console.error("Error:", error);
-  //   }
-  // };
-
   // Tx with Scaffold ETH hook
-  const { writeAsync: createEvent } = useScaffoldContractWrite({
-    contractName: "Claim",
-    functionName: "createRewardEvent",
-    args: [
-      formData.nftContract,
-      formData.rewardToken,
-      formData.creator,
-      `0x${formData.root}`, // Ensure 'root' is formatted as expected
-      BigInt(formData.blockStart), // Convert numbers to bigint
-      BigInt(formData.blockEnd),
-      BigInt(formData.rewardAmount),
-      BigInt(formData.nfts),
-      BigInt(formData.totalHeld),
-    ],
-    value: BigInt(0),
-    onBlockConfirmation: txnReceipt => {
-      console.log("📦 Transaction blockHash", txnReceipt.blockHash);
-    },
-  });
+  // const { writeAsync: createEvent } = useScaffoldContractWrite({
+  //   contractName: "Claim",
+  //   functionName: "createRewardEvent",
+  //   args: [
+  //     formData.nftContract,
+  //     formData.rewardToken,
+  //     formData.creator,
+  //     `0x${formData.root}`, // Ensure 'root' is formatted as expected
+  //     BigInt(formData.blockStart), // Convert numbers to bigint
+  //     BigInt(formData.blockEnd),
+  //     BigInt(formData.rewardAmount),
+  //     BigInt(formData.nfts),
+  //     BigInt(formData.totalHeld),
+  //   ],
+  //   value: BigInt(0),
+  //   onBlockConfirmation: txnReceipt => {
+  //     console.log("📦 Transaction blockHash", txnReceipt.blockHash);
+  //   },
+  // });
+
+  // Viem method to connect to wallet client
+  // const connect = async () => {
+  //   const [address] = await walletClient.requestAddresses();
+  //   setAccount(address);
+  // };
 
   // Scaffold-eth handle submit
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     console.log("handle submit reached");
     setIsLoading(true);
-    await createEvent();
-    console.log(isLoading);
+    //await connect();
+    if (!window.ethereum) {
+      console.error("window.ethereum is undefined");
+      return;
+    }
+
+    const walletClient = createWalletClient({
+      chain: sepolia,
+      transport: custom(window.ethereum),
+    });
+
+    // const [account] = await window.ethereum.request({
+    //   method: "eth_requestAccounts",
+    // });
+    const [address] = await walletClient.requestAddresses();
+    await setAccount(address);
+    console.log("account:", account);
+
+    const claimAbi = [
+      {
+        inputs: [
+          { internalType: "address", name: "_nftContract", type: "address" },
+          { internalType: "address", name: "_rewardToken", type: "address" },
+          { internalType: "address", name: "_creator", type: "address" },
+          { internalType: "bytes32", name: "_root", type: "bytes32" },
+          { internalType: "uint256", name: "_blockStart", type: "uint256" },
+          { internalType: "uint256", name: "_blockEnd", type: "uint256" },
+          { internalType: "uint256", name: "_rewardAmount", type: "uint256" },
+          { internalType: "uint256", name: "_nfts", type: "uint256" },
+          { internalType: "uint256", name: "_totalHeld", type: "uint256" },
+        ],
+        name: "createRewardEvent",
+        outputs: [{ internalType: "uint256", name: "eventId", type: "uint256" }],
+        stateMutability: "payable",
+        type: "function",
+      },
+    ];
+    console.log("claimAbi:", claimAbi);
+
+    const data = encodeFunctionData({
+      abi: claimAbi,
+      functionName: "createRewardEvent",
+      args: [
+        formData.nftContract,
+        formData.rewardToken,
+        formData.creator,
+        `0x${formData.root}`, // Ensure 'root' is formatted as expected
+        BigInt(formData.blockStart), // Convert numbers to bigint
+        BigInt(formData.blockEnd),
+        BigInt(formData.rewardAmount),
+        BigInt(formData.nfts),
+        BigInt(formData.totalHeld),
+      ],
+    });
+
+    const hash = await walletClient.sendTransaction({
+      account: address,
+      to: "0x2427F2289D88121fAeEdBfb1401069DE7ebA31Da",
+      data,
+    });
+    console.log("hash:", hash);
+
+    //await createEvent();
+    //console.log(isLoading);
     //console.log(writeAsync);
     console.log("wrote async?");
     setIsLoading(false);

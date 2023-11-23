@@ -25,7 +25,7 @@ export default function Page() {
             0 address as input. Thirdly we have the total amount of reward token that will be sent along with the
             contract. Fourth is the address of the event&apos;s creator. Fifth is the merkle root from the tree you
             constructed. The next three are the same variables you used when creating your leaves, six and seven being
-            block numbers and eight being the total nubmer of nfts. The ninth and final variable is the total number of
+            block numbers and eight being the total number of nfts. The ninth and final variable is the total number of
             blocks nfts were held for during your event, which is outputted to you when you created your leaves.
           </span>
           <CreateEventForm />
