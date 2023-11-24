@@ -1,9 +1,10 @@
 "use client";
 
 import React, { ChangeEvent, FormEvent, useState } from "react";
-import { Address, createWalletClient, custom, encodeFunctionData } from "viem";
+import { createWalletClient, custom, encodeFunctionData } from "viem";
 import { sepolia } from "viem/chains";
 import "viem/window";
+import ErrorPopup from "~~/components/loyalty-harvest/ErrorPopup";
 
 //import { claimAbi } from "~~/abi/Claim";
 // import { useAccount } from "wagmi";
@@ -34,11 +35,8 @@ import "viem/window";
   1. We probably don't need to pass `root` since we can calculate it from the tree, more explicit but not needed.
   */
 export default function CreateEventForm() {
-  // const { address } = useAccount();
-  // console.log("address:", address);
-
   // State to manage input values
-  const [account, setAccount] = useState<Address>();
+  // const [account, setAccount] = useState<Address>();
   const [formData, setFormData] = useState({
     nftContract: "",
     rewardToken: "",
@@ -59,62 +57,132 @@ export default function CreateEventForm() {
   // Used to display loading icon while event is being created
   const [isLoading, setIsLoading] = useState(false);
 
+  // State variable for storing error messages
+  const [errorMessage, setErrorMessage] = useState("");
+
+  // State variable for showing/hiding the error popup
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
+
   // Function to handle input changes
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value }); // Split the input value into an array
   };
 
-  // Tx with Scaffold ETH hook
-  // const { writeAsync: createEvent } = useScaffoldContractWrite({
-  //   contractName: "Claim",
-  //   functionName: "createRewardEvent",
-  //   args: [
-  //     formData.nftContract,
-  //     formData.rewardToken,
-  //     formData.creator,
-  //     `0x${formData.root}`, // Ensure 'root' is formatted as expected
-  //     BigInt(formData.blockStart), // Convert numbers to bigint
-  //     BigInt(formData.blockEnd),
-  //     BigInt(formData.rewardAmount),
-  //     BigInt(formData.nfts),
-  //     BigInt(formData.totalHeld),
-  //   ],
-  //   value: BigInt(0),
-  //   onBlockConfirmation: txnReceipt => {
-  //     console.log("📦 Transaction blockHash", txnReceipt.blockHash);
-  //   },
-  // });
+  // Ensure all input inside the inputArray has an even length
+  const hasEvenLength = async (inputArray: string[]) => {
+    for (const input of inputArray) {
+      console.log("input:", input);
+      console.log("input length:", input.length);
+      if (input.length % 2 != 0) {
+        console.log(`Hexadecimal string with odd length: ${input}`);
+        throw new Error(`Hexadecimal string with odd length: ${input}`);
+      }
+    }
+  };
 
-  // Viem method to connect to wallet client
-  // const connect = async () => {
-  //   const [address] = await walletClient.requestAddresses();
-  //   setAccount(address);
-  // };
+  // Ensure a string contains only valid hexadecimal characters
+  const isValidHexString = async (inputArray: string[]) => {
+    const hexRegex = new RegExp(/^0x[0-9A-Fa-f]+$/);
+    for (const input of inputArray) {
+      if (!hexRegex.test(input)) {
+        console.log(`Hexadecimal string with invalid characters: ${input}`);
+        throw new Error(`Hexadecimal string with invalid characters: ${input}`);
+      }
+    }
+  };
 
-  // Scaffold-eth handle submit
+  // Ensure a string contains only valid hexadecimal characters
+  const isAddressCorrectLength = async (inputArray: string[]) => {
+    for (const input of inputArray) {
+      console.log("inputty:", input);
+      console.log("input lengthy:", input.length);
+      if (input.length != 42) {
+        console.log(`Address with incorrect length: ${input}`);
+        throw new Error(`Address with incorrect length: ${input}`);
+      }
+    }
+  };
+
+  // Format and check the input
+  const checkInput = async () => {
+    // Ensure all hexadecimal strings are even
+    await hasEvenLength([formData.nftContract, formData.rewardToken, formData.creator, formData.root]);
+
+    // Ensure all hexadecimal strings have 0x prefix and only valid characters
+    await isValidHexString([formData.nftContract, formData.rewardToken, formData.creator, formData.root]);
+
+    // Ensure all addresses are correct length (20 bytes)
+    await isAddressCorrectLength([formData.nftContract, formData.rewardToken, formData.creator]);
+
+    // Ensure merkle root is correct length (32 bytes) {
+    if (formData.root.length != 66) {
+      console.log(
+        `Merkle root is the incorrect length! Expected bytes: 32, Actual bytes: ${(formData.root.length - 2) / 2}`,
+      );
+      throw new Error(
+        `Merkle root is the incorrect length! Expected bytes: 32, Actual bytes: ${(formData.root.length - 2) / 2}`,
+      );
+    }
+
+    // Ensure blockEnd is greater than blockStart
+    if (formData.blockEnd <= formData.blockStart) {
+      console.log(
+        `blockEnd is less than blockStart! blockEnd: ${formData.blockEnd} blockStart: ${formData.blockStart}`,
+      );
+      throw new Error(
+        `blockEnd is less than blockStart! blockEnd: ${formData.blockEnd} blockStart: ${formData.blockStart}`,
+      );
+    }
+
+    // Ensure totalHeld is greater than zero
+    if (parseInt(formData.totalHeld) <= 0) {
+      console.log(`totalHeld is less than or equal to zero! totalHeld: ${formData.totalHeld}`);
+      throw new Error(`totalHeld is less than or equal to zero! totalHeld: ${formData.totalHeld}`);
+    }
+  };
+
+  // Function to handle closing the error popup
+  const closeErrorPopup = () => {
+    setShowErrorPopup(false);
+    // Clear the error message
+    setErrorMessage("");
+  };
+
+  // Function to handle displaying the error popup
+  const displayErrorPopup = (errorMessage: string) => {
+    setErrorMessage(errorMessage);
+    setShowErrorPopup(true);
+  };
+
+  // Function to handle notifying the user with the custom popup
+  const notifyUser = (errorMessage: string): void => {
+    const duration = 10000;
+    displayErrorPopup(errorMessage);
+
+    // Close the popup after the specified duration
+    setTimeout(closeErrorPopup, duration);
+  };
+
+  // Viem handle submit
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     console.log("handle submit reached");
     setIsLoading(true);
-    //await connect();
+
+    // Connect to ethereum wallet
     if (!window.ethereum) {
       console.error("window.ethereum is undefined");
       return;
     }
-
     const walletClient = createWalletClient({
       chain: sepolia,
       transport: custom(window.ethereum),
     });
-
-    // const [account] = await window.ethereum.request({
-    //   method: "eth_requestAccounts",
-    // });
     const [address] = await walletClient.requestAddresses();
-    await setAccount(address);
-    console.log("account:", account);
+    //await setAccount(address);
 
+    // Define abi for `createRewardEvent()` function in `Claim.sol`
     const claimAbi = [
       {
         inputs: [
@@ -134,8 +202,19 @@ export default function CreateEventForm() {
         type: "function",
       },
     ];
-    console.log("claimAbi:", claimAbi);
 
+    // Check formData input and throw error if anything is invalid
+    try {
+      await checkInput();
+    } catch (error: any) {
+      // Notify user with an error pop up
+      await notifyUser(error);
+      // Set loading to false since an error occurred
+      setIsLoading(false);
+      return;
+    }
+
+    // Encode tx data
     const data = encodeFunctionData({
       abi: claimAbi,
       functionName: "createRewardEvent",
@@ -143,7 +222,7 @@ export default function CreateEventForm() {
         formData.nftContract,
         formData.rewardToken,
         formData.creator,
-        `0x${formData.root}`, // Ensure 'root' is formatted as expected
+        formData.root,
         BigInt(formData.blockStart), // Convert numbers to bigint
         BigInt(formData.blockEnd),
         BigInt(formData.rewardAmount),
@@ -152,6 +231,7 @@ export default function CreateEventForm() {
       ],
     });
 
+    // Send the `createRewardEvent()` transaction
     const hash = await walletClient.sendTransaction({
       account: address,
       to: "0x2427F2289D88121fAeEdBfb1401069DE7ebA31Da",
@@ -159,7 +239,6 @@ export default function CreateEventForm() {
     });
     console.log("hash:", hash);
 
-    //await createEvent();
     //console.log(isLoading);
     //console.log(writeAsync);
     console.log("wrote async?");
@@ -214,7 +293,7 @@ export default function CreateEventForm() {
             type="text"
             name="rewardToken"
             placeholder="Reward Token Address"
-            className="border  p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
+            className="border p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
             value={formData.rewardToken}
             onChange={handleInputChange}
           />
@@ -224,7 +303,7 @@ export default function CreateEventForm() {
             type="text"
             name="rewardAmount"
             placeholder="Reward Token Amount"
-            className="border  p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
+            className="border p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
             value={formData.rewardAmount}
             onChange={handleInputChange}
           />
@@ -234,7 +313,7 @@ export default function CreateEventForm() {
             type="text"
             name="creator"
             placeholder="Creator Address"
-            className="border  p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
+            className="border p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
             value={formData.creator}
             onChange={handleInputChange}
           />
@@ -244,7 +323,7 @@ export default function CreateEventForm() {
             type="text"
             name="root"
             placeholder="Merkle Root"
-            className="border  p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
+            className="border p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
             value={formData.root}
             onChange={handleInputChange}
           />
@@ -254,7 +333,7 @@ export default function CreateEventForm() {
             type="text"
             name="blockStart"
             placeholder="Block starting number"
-            className="border  p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
+            className="border p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
             value={formData.blockStart}
             onChange={handleInputChange}
           />
@@ -264,7 +343,7 @@ export default function CreateEventForm() {
             type="text"
             name="blockEnd"
             placeholder="Block ending number"
-            className="border  p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
+            className="border p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
             value={formData.blockEnd}
             onChange={handleInputChange}
           />
@@ -274,7 +353,7 @@ export default function CreateEventForm() {
             type="text"
             name="nfts"
             placeholder="Amount of NFTs"
-            className="border  p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
+            className="border p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
             value={formData.nfts}
             onChange={handleInputChange}
           />
@@ -284,7 +363,7 @@ export default function CreateEventForm() {
             type="text"
             name="totalHeld"
             placeholder="Total blocks held"
-            className="border  p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
+            className="border p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
             value={formData.totalHeld}
             onChange={handleInputChange}
           />
@@ -292,7 +371,7 @@ export default function CreateEventForm() {
         <div className="col-span-1">
           <button
             type="submit"
-            className="bg-secondary  border text-base-100 rounded my-2 px-4 py-2 bg-gradient-to-r from-green-200 via-secondary to-green-200 hover:via-green-200 hover:to-green-200 hover:shadow-lg hover:-translate-y-1   hover:bg-green-300 w-full"
+            className="bg-secondary border text-base-100 rounded my-2 px-4 py-2 bg-gradient-to-r from-green-200 via-secondary to-green-200 hover:via-green-200 hover:to-green-200 hover:shadow-lg hover:-translate-y-1   hover:bg-green-300 w-full"
           >
             Create
           </button>
@@ -306,6 +385,7 @@ export default function CreateEventForm() {
         </div>
       )} */}
       {isLoading && <div className="text-lg text-purple-700 font-semibold">Loading... </div>}
+
       {/* Button to copy leaves data to clipboard */}
       {eventData.hash !== "" && eventData.eventId !== "" && (
         <div className="flex gap-7">
@@ -323,6 +403,9 @@ export default function CreateEventForm() {
           </button>
         </div>
       )}
+
+      {/* Conditionally render the custom error popup */}
+      {showErrorPopup && <ErrorPopup errorMessage={errorMessage} onClose={closeErrorPopup} />}
     </div>
   );
 }
