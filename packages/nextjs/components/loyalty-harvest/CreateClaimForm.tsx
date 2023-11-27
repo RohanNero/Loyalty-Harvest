@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ChangeEvent, FormEvent, useState } from "react";
+import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import {
   createPublicClient,
   createWalletClient,
@@ -58,14 +58,28 @@ export default function CreateClaimForm() {
   const [showErrorPopup, setShowErrorPopup] = useState(false);
 
   // Initialize Viem client objects
-  if (!window.ethereum) {
-    console.log("Window.ethereum is undefined!");
-    throw new Error("Window.ethereum is undefined!");
-  }
-  const publicClient = createPublicClient({
-    chain: sepolia,
-    transport: custom(window.ethereum),
-  });
+
+  // if (!window.ethereum) {
+  //   console.log("Window.ethereum is undefined!");
+  //   throw new Error("Window.ethereum is undefined!");
+  // }
+  // const publicClient = createPublicClient({
+  //   chain: sepolia,
+  //   transport: custom(window.ethereum),
+  // });
+  // State variable to store Viem public client
+
+  let publicClient: ReturnType<typeof createPublicClient> | undefined;
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.ethereum) {
+      publicClient = createPublicClient({
+        chain: sepolia,
+        transport: custom(window.ethereum),
+      });
+    } else {
+      throw new Error("Window ethereum is undefined!");
+    }
+  }, []);
 
   // Function to handle input changes
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -138,6 +152,9 @@ export default function CreateClaimForm() {
       abi: claimAbi,
       functionName: "viewEventMapLength",
     });
+    if (publicClient == undefined) {
+      throw new Error("publicClient is undefined!");
+    }
     const length = await publicClient.call({
       data: callData,
       to: "0x01cA0957898BfB42d7620a355d98014a4731Ea8D",
@@ -345,6 +362,9 @@ export default function CreateClaimForm() {
     }
 
     console.log("hash:", hash);
+    if (publicClient == undefined) {
+      throw new Error("publicClient is undefined!");
+    }
     const transaction = await publicClient.waitForTransactionReceipt({ hash: hash as `0x${string}` });
     const value = transaction.logs[0].data;
     console.log("parseValue:", parseInt(value));
