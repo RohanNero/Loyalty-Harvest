@@ -286,10 +286,7 @@ export default function CreateClaimForm() {
         abi: claimAbi,
         functionName: "claim",
         args: [
-          data.proof
-            .toString()
-            .split(",")
-            .map((item: string) => `0x${item}` as const),
+          data.proof.toString().split(",") as readonly `0x${string}`[],
           {
             holder: data.holder,
             to: data.to,
@@ -451,6 +448,14 @@ export default function CreateClaimForm() {
         <div className="col-span-1">
           <button
             type="submit"
+            disabled={
+              data.proof.length === 0 ||
+              data.holder.trim() === "" ||
+              data.to.trim() === "" ||
+              data.eventId.trim() === "" ||
+              data.tokenId.trim() === "" ||
+              data.heldUntil.trim() === ""
+            }
             className="bg-purple-700 border rounded my-2 px-4 py-2 bg-gradient-to-r from-secondary via-green-200 to-secondary hover:from-secondary hover:to-secondary text-secondary hover:text-base-100 hover:shadow-lg hover:-translate-y-1 hover:bg-green-300 w-full"
           >
             Create
