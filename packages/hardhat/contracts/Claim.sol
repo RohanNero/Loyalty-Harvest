@@ -331,7 +331,7 @@ contract Claim {
                     abi.encode(
                         info.holder,
                         eventMap[info.eventId].nftContract,
-                        info.eventId,
+                        info.tokenId,
                         info.heldUntil
                     )
                 )

@@ -35,7 +35,9 @@ export default async function createProof(eventId: number, userAddress: string) 
   // This "ugly" fix was found here: https://github.com/web3/web3.js/issues/6275#issuecomment-1650199729
 
   const eventData = await client.readContract({
-    address: "0x2d21A9Fc8fb893f648aa9607A17FE595EAC12663", // Temporarily hard-coded to deployed Sepolia contract
+    //address: "0x2d21A9Fc8fb893f648aa9607A17FE595EAC12663", // Temporarily hard-coded to deployed Sepolia contract - Broken
+    //address: "0x2427F2289D88121fAeEdBfb1401069DE7ebA31Da", // Temporarily hard-coded to deployed Sepolia contract - Broken
+    address: "0x01cA0957898BfB42d7620a355d98014a4731Ea8D", // Temporarily hard-coded to deployed Sepolia contract
     abi: claimAbi,
     functionName: "viewEvent",
     args: [BigInt(eventId)],

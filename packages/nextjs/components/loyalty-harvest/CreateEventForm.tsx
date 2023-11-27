@@ -4,9 +4,9 @@ import React, { ChangeEvent, FormEvent, useState } from "react";
 import { createWalletClient, custom, encodeFunctionData } from "viem";
 import { sepolia } from "viem/chains";
 import "viem/window";
+import claimAbi from "~~/abi/Claim";
 import ErrorPopup from "~~/components/loyalty-harvest/ErrorPopup";
 
-//import { claimAbi } from "~~/abi/Claim";
 // import { useAccount } from "wagmi";
 // import { useScaffoldContractRead, useScaffoldContractWrite, useScaffoldEventSubscriber } from "~~/hooks/scaffold-eth";
 // import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
@@ -98,8 +98,12 @@ export default function CreateEventForm() {
       console.log("inputty:", input);
       console.log("input lengthy:", input.length);
       if (input.length != 42) {
-        console.log(`Address with incorrect length: ${input}`);
-        throw new Error(`Address with incorrect length: ${input}`);
+        console.log(
+          `Address with incorrect length: ${input}! Expected bytes: 20 Actual bytes: ${(input.length - 2) / 2}`,
+        );
+        throw new Error(
+          `Address with incorrect length: ${input}! Expected bytes: 20 Actual bytes: ${(input.length - 2) / 2}`,
+        );
       }
     }
   };
@@ -180,28 +184,27 @@ export default function CreateEventForm() {
       transport: custom(window.ethereum),
     });
     const [address] = await walletClient.requestAddresses();
-    //await setAccount(address);
 
     // Define abi for `createRewardEvent()` function in `Claim.sol`
-    const claimAbi = [
-      {
-        inputs: [
-          { internalType: "address", name: "_nftContract", type: "address" },
-          { internalType: "address", name: "_rewardToken", type: "address" },
-          { internalType: "address", name: "_creator", type: "address" },
-          { internalType: "bytes32", name: "_root", type: "bytes32" },
-          { internalType: "uint256", name: "_blockStart", type: "uint256" },
-          { internalType: "uint256", name: "_blockEnd", type: "uint256" },
-          { internalType: "uint256", name: "_rewardAmount", type: "uint256" },
-          { internalType: "uint256", name: "_nfts", type: "uint256" },
-          { internalType: "uint256", name: "_totalHeld", type: "uint256" },
-        ],
-        name: "createRewardEvent",
-        outputs: [{ internalType: "uint256", name: "eventId", type: "uint256" }],
-        stateMutability: "payable",
-        type: "function",
-      },
-    ];
+    // const claimAbi = [
+    //   {
+    //     inputs: [
+    //       { internalType: "address", name: "_nftContract", type: "address" },
+    //       { internalType: "address", name: "_rewardToken", type: "address" },
+    //       { internalType: "address", name: "_creator", type: "address" },
+    //       { internalType: "bytes32", name: "_root", type: "bytes32" },
+    //       { internalType: "uint256", name: "_blockStart", type: "uint256" },
+    //       { internalType: "uint256", name: "_blockEnd", type: "uint256" },
+    //       { internalType: "uint256", name: "_rewardAmount", type: "uint256" },
+    //       { internalType: "uint256", name: "_nfts", type: "uint256" },
+    //       { internalType: "uint256", name: "_totalHeld", type: "uint256" },
+    //     ],
+    //     name: "createRewardEvent",
+    //     outputs: [{ internalType: "uint256", name: "eventId", type: "uint256" }],
+    //     stateMutability: "payable",
+    //     type: "function",
+    //   },
+    // ];
 
     // Check formData input and throw error if anything is invalid
     try {
@@ -222,7 +225,7 @@ export default function CreateEventForm() {
         formData.nftContract,
         formData.rewardToken,
         formData.creator,
-        formData.root,
+        formData.root as `0x${string}`,
         BigInt(formData.blockStart), // Convert numbers to bigint
         BigInt(formData.blockEnd),
         BigInt(formData.rewardAmount),
@@ -234,7 +237,8 @@ export default function CreateEventForm() {
     // Send the `createRewardEvent()` transaction
     const hash = await walletClient.sendTransaction({
       account: address,
-      to: "0x2427F2289D88121fAeEdBfb1401069DE7ebA31Da",
+      to: "0x01cA0957898BfB42d7620a355d98014a4731Ea8D", // hard-coded to sepolia `claim.sol`
+      // to: "0x2427F2289D88121fAeEdBfb1401069DE7ebA31Da", // hard-coded to sepolia `claim.sol` - Broken
       data,
     });
     console.log("hash:", hash);

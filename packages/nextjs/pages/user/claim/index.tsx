@@ -19,7 +19,7 @@ export default function Page() {
           <div className="font-mono text-[#10B981]">
             <span>
               To claim your rewards from an event, you need to input your merkle proof, the address that held the NFT,
-              the address you want to receive the tokens to, the reward event&asop;s Id, your NFT&asop;s tokenId, the
+              the address you want to receive the tokens to, the reward event&apos;s Id, your NFT&apos;s tokenId, the
               block number you held your NFT until, and optionally, your signature.
             </span>
           </div>
