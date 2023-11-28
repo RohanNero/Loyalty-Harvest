@@ -1,11 +1,7 @@
 "use client";
 
 import React, { ChangeEvent, FormEvent, useState } from "react";
-
-//import createLeaves from "../../backend/js/createLeaves";
-// Route handler api call, not sure how to use route handlers currently lol
-//import { POST } from "../src/app/api/route";
-// Used to ensure that the call suceeds past `exceeded rate limit` error
+import ErrorPopup from "~~/components/loyalty-harvest/ErrorPopup";
 
 export default function CreateMerkleForm() {
   // State to manage input values
@@ -15,11 +11,12 @@ export default function CreateMerkleForm() {
     root: "",
     loading: false,
   });
-  // const [formData, setFormData] = useState({
-  //   tree: [],
-  //   root: "",
-  // });
-  //const [isLoading, setIsLoading] = useState(false);
+
+  // State variable for storing error messages
+  const [errorMessage, setErrorMessage] = useState("");
+
+  // State variable for showing/hiding the error popup
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
 
   // Function to handle input changes
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -27,20 +24,111 @@ export default function CreateMerkleForm() {
     setFormData({ ...formData, [name]: value }); // Split the input value into an array
   };
 
+  // Function to clean input
+  const cleanInput = async () => {
+    const cleanedLeavesString = formData.leaves.replace(/\s+/g, "");
+    // Remove the extra square brackets from the 'leaves' string
+    const cleanedLeaves = cleanedLeavesString.slice(2, -2); // Remove the first two and last two characters (square brackets)
+
+    // Split the cleaned 'leaves' string into individual leaf strings
+    const leavesArray = cleanedLeaves.split("],[").map((leaf: string) => `[${leaf}]`);
+    // Manually split each leaf string into an array of values
+    const parsedLeavesArray: string[][] = leavesArray.map((leaf: string) => {
+      // Remove extra square brackets within each leaf string
+      const cleanedLeaf = leaf.replace(/\[|\]/g, "");
+      // Split the cleaned leaf string into individual values
+      const values = cleanedLeaf.split(",");
+
+      // Remove extra quotation marks around each value and trim whitespace
+      const cleanedValues = values.map((value: string) => value.replace(/["']/g, "").trim());
+      // Filter out empty strings (caused by trailing commas inside the leaves object)
+      return cleanedValues.filter(Boolean);
+    });
+    return parsedLeavesArray;
+  };
+
+  // Ensure addresses contain exactly 20 bytes
+  const isAddressCorrectLength = async (inputArray: string[]) => {
+    for (const input of inputArray) {
+      console.log("inputty:", input);
+      console.log("input lengthy:", input.length);
+      if (input.length != 42) {
+        console.log(
+          `Address with incorrect length: ${input}! Expected bytes: 20 Actual bytes: ${(input.length - 2) / 2}`,
+        );
+        throw new Error(
+          `Address with incorrect length: ${input}! Expected bytes: 20 Actual bytes: ${(input.length - 2) / 2}`,
+        );
+      }
+    }
+  };
+
+  // Ensure all input inside the inputArray has an even length (all hex strings)
+  const hasEvenLength = async (inputArray: string[]) => {
+    for (const input of inputArray) {
+      console.log("input:", input);
+      console.log("input length:", input.length);
+      if (input.length % 2 != 0) {
+        console.log(`Hexadecimal string with odd length: ${input}`);
+        throw new Error(`Hexadecimal string with odd length: ${input}`);
+      }
+    }
+  };
+
+  // Ensure hex strings contains 0x prefix and only valid characters
+  const isValidHexString = async (inputArray: string[]) => {
+    const hexRegex = new RegExp(/^0x[0-9A-Fa-f]+$/);
+    for (const input of inputArray) {
+      if (!hexRegex.test(input)) {
+        console.log(`Hexadecimal string with invalid characters: ${input}`);
+        throw new Error(`Hexadecimal string with invalid characters: ${input}`);
+      }
+    }
+  };
+
+  // Ensure there are no duplicate tokenIds
+  const ensureNoDuplicateTokenIds = async (inputArray: string[]) => {
+    let prevInput = "";
+    for (const input of inputArray) {
+      if (input == prevInput) {
+        throw new Error(`Duplicates found for tokenId ${input}!`);
+      }
+      prevInput = input;
+    }
+  };
+
+  // Checks the input and returns an error message if invalid
+  const checkInput = async (leaves: string[][]) => {
+    const tokenIdArray: string[] = [];
+    console.log("lef:", leaves);
+    for (const leaf of leaves) {
+      if (leaf.length !== 4) {
+        throw new Error(`Invalid Leaf: ${leaf}`);
+      }
+      await isAddressCorrectLength([leaf[0], leaf[1]]);
+      await isValidHexString([leaf[0], leaf[1]]);
+      await hasEvenLength([leaf[0], leaf[1]]);
+      tokenIdArray.push(leaf[2]);
+    }
+    await ensureNoDuplicateTokenIds(tokenIdArray);
+  };
+
   // Function to handle form submission
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      //console.log("formData:", formData);
       // fetch formData using `createMerkleAPI`
       setFormData({ ...formData, loading: true }); // Update loading state
-      //setFormData({ loading: true, tree: [], root: "" });
+      const leaves = await cleanInput();
+      console.log("leaves:", leaves);
+      await checkInput(leaves);
+
       const merkleData = await fetch("/api/createTreeAPI", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(leaves),
       });
       const json = await merkleData.json();
       console.log("formData:", json);
@@ -50,9 +138,37 @@ export default function CreateMerkleForm() {
       // console.log("useState data:", formData);
       // Return the result
       return json;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error:", error);
+      // Notify user with an error pop up
+      await notifyUser(error);
+      setFormData(prevData => ({
+        ...prevData,
+        loading: false,
+      }));
     }
+  };
+
+  // Function to handle closing the error popup
+  const closeErrorPopup = () => {
+    setShowErrorPopup(false);
+    // Clear the error message
+    setErrorMessage("");
+  };
+
+  // Function to handle displaying the error popup
+  const displayErrorPopup = (errorMessage: string) => {
+    setErrorMessage(errorMessage);
+    setShowErrorPopup(true);
+  };
+
+  // Function to handle notifying the user with the custom popup
+  const notifyUser = (errorMessage: string): void => {
+    const duration = 10000;
+    displayErrorPopup(errorMessage);
+
+    // Close the popup after the specified duration
+    setTimeout(closeErrorPopup, duration);
   };
 
   // Function to handle copying leaves data to clipboard
@@ -124,6 +240,8 @@ export default function CreateMerkleForm() {
           </button>
         </div>
       )}
+      {/* Conditionally render the custom error popup */}
+      {showErrorPopup && <ErrorPopup errorMessage={errorMessage} onClose={closeErrorPopup} />}
     </div>
   );
 }
