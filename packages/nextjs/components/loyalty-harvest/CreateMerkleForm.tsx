@@ -28,7 +28,7 @@ export default function CreateMerkleForm() {
   const cleanInput = async () => {
     const cleanedLeavesString = formData.leaves.replace(/\s+/g, "");
     // Remove the extra square brackets from the 'leaves' string
-    const cleanedLeaves = cleanedLeavesString.slice(2, -2); // Remove the first two and last two characters (square brackets)
+    const cleanedLeaves = cleanedLeavesString.slice(2, -2);
 
     // Split the cleaned 'leaves' string into individual leaf strings
     const leavesArray = cleanedLeaves.split("],[").map((leaf: string) => `[${leaf}]`);
@@ -113,7 +113,7 @@ export default function CreateMerkleForm() {
     await ensureNoDuplicateTokenIds(tokenIdArray);
   };
 
-  // Function to handle form submission
+  // Submits form and creates tree
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
@@ -149,20 +149,20 @@ export default function CreateMerkleForm() {
     }
   };
 
-  // Function to handle closing the error popup
+  // Closes the error popup
   const closeErrorPopup = () => {
     setShowErrorPopup(false);
     // Clear the error message
     setErrorMessage("");
   };
 
-  // Function to handle displaying the error popup
+  // Displays the error popup
   const displayErrorPopup = (errorMessage: string) => {
     setErrorMessage(errorMessage);
     setShowErrorPopup(true);
   };
 
-  // Function to handle notifying the user with the custom popup
+  // Notifies the user with the custom error popup
   const notifyUser = (errorMessage: string): void => {
     const duration = 10000;
     displayErrorPopup(errorMessage);
@@ -171,7 +171,7 @@ export default function CreateMerkleForm() {
     setTimeout(closeErrorPopup, duration);
   };
 
-  // Function to handle copying leaves data to clipboard
+  // Copes merkle tree to clipboard
   const copyToClipboard = () => {
     const merkleText = JSON.stringify(formData.tree, null, 2); // Convert leaves data to a nicely formatted JSON string
     navigator.clipboard
@@ -183,7 +183,8 @@ export default function CreateMerkleForm() {
         console.error("Failed to copy merkle data to clipboard: ", error);
       });
   };
-  // Function to handle copying leaves data to clipboard
+
+  // Copies merkle root to clipboard
   const copyRootToClipboard = () => {
     const merkleText = JSON.stringify(formData.root, null, 2); // Convert leaves data to a nicely formatted JSON string
     navigator.clipboard

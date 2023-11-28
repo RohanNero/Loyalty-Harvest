@@ -1,11 +1,9 @@
 "use client";
 
 import React, { ChangeEvent, FormEvent, useState } from "react";
-//import createLeaves from "../../backend/js/createLeaves";
-// Route handler api call, not sure how to use route handlers currently lol
-//import { POST } from "../src/app/api/route";
 // Used to ensure that the call suceeds past `exceeded rate limit` error
 import retry from "async-retry";
+import ErrorPopup from "~~/components/loyalty-harvest/ErrorPopup";
 
 /* eslint-disable */
 
@@ -18,12 +16,67 @@ export default function CreateLeavesForm() {
     totalSupply: "",
   });
   const [leafData, setLeafData] = useState({ leaves: [], held: 0 });
-  const [isLoading, setIsLoaing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // State variable for storing error messages
+  const [errorMessage, setErrorMessage] = useState("");
+
+  // State variable for showing/hiding the error popup
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
 
   // Function to handle input changes
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+  };
+
+  // Ensure address input is valid
+  const checkAddress = async (address: string) => {
+    // Ensure even length
+    if (address.length % 2 != 0) {
+      console.log(`Hexadecimal string with odd length: ${address}`);
+      throw new Error(`Hexadecimal string with odd length: ${address}`);
+    }
+
+    // Ensure correct length
+    if (address.length != 42) {
+      console.log(
+        `Address with incorrect length: ${address}! Expected bytes: 20 Actual bytes: ${(address.length - 2) / 2}`,
+      );
+      throw new Error(
+        `Address with incorrect length: ${address}! Expected bytes: 20 Actual bytes: ${(address.length - 2) / 2}`,
+      );
+    }
+
+    // Ensure address contains only valid characters
+    const hexRegex = new RegExp(/^0x[0-9A-Fa-f]+$/);
+    if (!hexRegex.test(address)) {
+      console.log(`Hexadecimal string with invalid characters: ${address}`);
+      throw new Error(`Hexadecimal string with invalid characters: ${address}`);
+    }
+  };
+
+  // Ensure starting and ending block numbers are valid
+  const checkBlocks = async (start: string, end: string) => {
+    if (end <= start) {
+      throw new Error(`Block end cannot be less than or equal to block start! Start: ${start} End: ${end}`);
+    }
+  };
+
+  // Ensure nfts/total supply is greater than 1
+  // (if only 1 nft is being used, it makes more sense to directly send rewards to that user)
+  const checkTotalSupply = (supply: string) => {
+    console.log("supply:", supply);
+    if (parseInt(supply) <= 1) {
+      throw new Error(`Total supply must be greater than 1! Input: ${supply}`);
+    }
+  };
+
+  // Ensure input is valid
+  const checkInput = async () => {
+    await checkAddress(formData.nftAddress);
+    await checkBlocks(formData.blockStart, formData.blockEnd);
+    await checkTotalSupply(formData.totalSupply);
   };
 
   // Function to handle form submission
@@ -37,24 +90,17 @@ export default function CreateLeavesForm() {
     console.log("blockEnd:", blockEnd);
     try {
       console.log("formData:", formData);
-      // Original fetch request without `retries`
-      // const leaves = await fetch("/api/createLeavesAPI", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json", // Specify JSON content type
-      //   },
-      //   body: JSON.stringify(formData)
-      // });
       setLeafData({ leaves: [], held: 0 });
+      await checkInput();
 
       const leavesData = await retry(
         async () => {
-          setIsLoaing(true);
+          setIsLoading(true);
           // Make the API request
           const response = await fetch("/api/createLeavesAPI", {
             method: "POST",
             headers: {
-              "Content-Type": "application/json", // Specify JSON content type
+              "Content-Type": "application/json",
             },
             body: JSON.stringify(formData),
           });
@@ -80,7 +126,7 @@ export default function CreateLeavesForm() {
         },
       );
 
-      setIsLoaing(false);
+      setIsLoading(false);
       setLeafData({ leaves: leavesData.leaves, held: leavesData.totalHeld });
       // Return the result
       console.log("leaves:", leavesData.leaves);
@@ -89,10 +135,37 @@ export default function CreateLeavesForm() {
 
       //const leaves = POST(formData);
       //console.log("Merkle Tree Leaves:", fetchWithRetries);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error:", error);
+      setIsLoading(false);
+      // Notify user with an error pop up
+      await notifyUser(error);
     }
   };
+
+  // Closes the error popup
+  const closeErrorPopup = () => {
+    setShowErrorPopup(false);
+    // Clear the error message
+    setErrorMessage("");
+  };
+
+  // Displays the error popup
+  const displayErrorPopup = (errorMessage: string) => {
+    setErrorMessage(errorMessage);
+    setShowErrorPopup(true);
+  };
+
+  // Notifies the user with the custom error popup
+  const notifyUser = (errorMessage: string): void => {
+    const duration = 10000;
+    displayErrorPopup(errorMessage);
+
+    // Close the popup after the specified duration
+    setTimeout(closeErrorPopup, duration);
+  };
+
+  // Display output logic below //
 
   // State to manage pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -111,7 +184,7 @@ export default function CreateLeavesForm() {
   // Filter the leaves to display only the items in the current page
   const leavesToDisplay = leafData?.leaves?.slice(startIndex, endIndex) || [];
 
-  // Function to handle copying leaves data to clipboard
+  // Copies leaves data to clipboard
   const copyToClipboard = () => {
     const leavesText = JSON.stringify(leafData?.leaves, null, 2); // Convert leaves data to a nicely formatted JSON string
     navigator.clipboard
@@ -234,6 +307,8 @@ export default function CreateLeavesForm() {
           </div>
         </div>
       )}
+      {/* Conditionally render the custom error popup */}
+      {showErrorPopup && <ErrorPopup errorMessage={errorMessage} onClose={closeErrorPopup} />}
     </div>
   );
 }

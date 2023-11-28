@@ -2,6 +2,7 @@
 
 import React, { ChangeEvent, FormEvent, useState } from "react";
 import { createWalletClient, custom } from "viem";
+import ErrorPopup from "~~/components/loyalty-harvest/ErrorPopup";
 
 export default function CreateSignatureForm() {
   // State to manage input, output, and loading state values
@@ -11,6 +12,12 @@ export default function CreateSignatureForm() {
     loading: false,
   });
 
+  // State variable for storing error messages
+  const [errorMessage, setErrorMessage] = useState("");
+
+  // State variable for showing/hiding the error popup
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
+
   // Function to handle input changes
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
@@ -18,6 +25,30 @@ export default function CreateSignatureForm() {
       ...prevData,
       address: value,
     }));
+  };
+
+  // Ensure address input is valid
+  const checkAddress = async (address: string) => {
+    // Ensure even length
+    if (address.length % 2 != 0) {
+      console.log(`Address has odd length: ${address}`);
+      throw new Error(`Address has odd length: ${address}`);
+    }
+
+    // Ensure correct length
+    if (address.length != 42) {
+      console.log(`Incorrect address length: ${address}! Expected bytes: 20 Actual bytes: ${(address.length - 2) / 2}`);
+      throw new Error(
+        `Incorrect address length: ${address}! Expected bytes: 20 Actual bytes: ${(address.length - 2) / 2}`,
+      );
+    }
+
+    // Ensure address contains only valid characters
+    const hexRegex = new RegExp(/^0x[0-9A-Fa-f]+$/);
+    if (!hexRegex.test(address)) {
+      console.log(`Address contains invalid characters: ${address}`);
+      throw new Error(`Address contains invalid characters: ${address}`);
+    }
   };
 
   // Function to handle form submission
@@ -29,6 +60,7 @@ export default function CreateSignatureForm() {
         signature: "",
         loading: true,
       }));
+      await checkAddress(data.address);
 
       if (!window.ethereum) {
         console.error("window.ethereum is undefined");
@@ -56,9 +88,33 @@ export default function CreateSignatureForm() {
         loading: false,
       }));
       return signature;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error:", error);
+      // Notify user with an error pop up
+      await notifyUser(error);
     }
+  };
+
+  // Closes the error popup
+  const closeErrorPopup = () => {
+    setShowErrorPopup(false);
+    // Clear the error message
+    setErrorMessage("");
+  };
+
+  // Displays the error popup
+  const displayErrorPopup = (errorMessage: string) => {
+    setErrorMessage(errorMessage);
+    setShowErrorPopup(true);
+  };
+
+  // Notifies the user with the custom error popup
+  const notifyUser = (errorMessage: string): void => {
+    const duration = 10000;
+    displayErrorPopup(errorMessage);
+
+    // Close the popup after the specified duration
+    setTimeout(closeErrorPopup, duration);
   };
 
   // Function for copying signature to clipboard
@@ -87,6 +143,7 @@ export default function CreateSignatureForm() {
         />
         <button
           type="submit"
+          disabled={data.address === ""}
           className="bg-purple-700 border hover:text-green-300 rounded my-2 px-4 py-2 bg-gradient-to-r from-secondary via-green-200 to-secondary hover:from-secondary hover:to-secondary text-secondary hover:text-base-100 hover:shadow-lg hover:-translate-y-1   hover:bg-green-300 w-1/2"
         >
           Create
@@ -111,6 +168,8 @@ export default function CreateSignatureForm() {
           </button>
         </div>
       )}
+      {/* Conditionally render the custom error popup */}
+      {showErrorPopup && <ErrorPopup errorMessage={errorMessage} onClose={closeErrorPopup} />}
     </div>
   );
 }
