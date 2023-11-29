@@ -66,15 +66,9 @@ export const Header = () => {
         console.log("chainKey:", chainKey);
         console.log("chainValue:", chainValue);
         console.log("key:", chainKey);
-
-        const modifiedChainValue = {
-          ...chainValue,
-          testnet: false, // Replace with the correct value
-        };
-        console.log("modifedsifje chain value:", modifiedChainValue);
         //console.log("chains:", chains[chainKey]);
 
-        // setSelectedNetwork(chainValue.name);
+        // This doesn't work directly, but somehow works when passed through a function?
         //scaffoldConfig.targetNetwork = chains[chainKey as keyof typeof chains];
         changeTargetNetwork(chains[chainKey as keyof typeof chains]);
         console.log(`Switching chain to ${chainValue.name}...`);
