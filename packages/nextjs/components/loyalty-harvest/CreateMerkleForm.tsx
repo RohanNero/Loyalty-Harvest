@@ -24,7 +24,7 @@ export default function CreateMerkleForm() {
     setFormData({ ...formData, [name]: value }); // Split the input value into an array
   };
 
-  // Function to clean input
+  // Cleans and formats input
   const cleanInput = async () => {
     const cleanedLeavesString = formData.leaves.replace(/\s+/g, "");
     // Remove the extra square brackets from the 'leaves' string
@@ -117,12 +117,12 @@ export default function CreateMerkleForm() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      // fetch formData using `createMerkleAPI`
-      setFormData({ ...formData, loading: true }); // Update loading state
+      setFormData({ ...formData, loading: true });
       const leaves = await cleanInput();
       console.log("leaves:", leaves);
       await checkInput(leaves);
 
+      // fetch formData using `createMerkleAPI`
       const merkleData = await fetch("/api/createTreeAPI", {
         method: "POST",
         headers: {

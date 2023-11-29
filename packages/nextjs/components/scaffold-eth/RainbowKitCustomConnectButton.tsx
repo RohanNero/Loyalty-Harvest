@@ -47,6 +47,8 @@ export const RainbowKitCustomConnectButton = () => {
               }
 
               if (chain.unsupported || chain.id !== configuredNetwork.id) {
+                console.log("rainbow configured:", configuredNetwork);
+                console.log("rainbow chain:", chain);
                 return (
                   <div className="dropdown dropdown-end">
                     <label tabIndex={0} className="btn btn-error btn-sm dropdown-toggle gap-1">
@@ -82,7 +84,7 @@ export const RainbowKitCustomConnectButton = () => {
                   </div>
                 );
               }
-
+              console.log("rainbow chain:", chain);
               return (
                 <div className="px-2 flex justify-end items-center">
                   <div className="flex flex-col items-center mr-1">

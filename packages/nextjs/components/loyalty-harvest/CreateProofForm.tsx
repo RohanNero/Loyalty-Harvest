@@ -176,7 +176,7 @@ export default function CreateProofForm() {
       <h3 className="text-xl text-[#10B981] justify-self-center mb-4">Create Merkle Proof</h3>
       <form className="text-center w-full flex flex-col gap-2 items-center justify-center" onSubmit={handleSubmit}>
         <input
-          type="text"
+          type="number"
           name="eventId"
           placeholder="Event Id"
           className="border p-1.5 text-green-400 focus:ring-0 rounded w-2/3 bg-green-200 hover:bg-green-300"

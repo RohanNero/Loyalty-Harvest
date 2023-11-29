@@ -8,15 +8,25 @@ export function useAccountBalance(address?: string) {
   const [balance, setBalance] = useState<number | null>(null);
   const price = useGlobalState(state => state.nativeCurrencyPrice);
 
+  console.log("gettargetnetwork:", getTargetNetwork().id);
+
+  const targetNetworkId = getTargetNetwork().id;
+
   const {
     data: fetchedBalanceData,
     isError,
     isLoading,
+    refetch,
   } = useBalance({
     address,
     watch: true,
-    chainId: getTargetNetwork().id,
+    chainId: targetNetworkId,
   });
+
+  // console.log("getNetwork:", getTargetNetwork().id);
+  // console.log("address:", address);
+  // console.log("reereee:", refetch);
+  // console.log("global fetchedBalance:", fetchedBalanceData);
 
   const onToggleBalance = useCallback(() => {
     if (price > 0) {
@@ -25,10 +35,14 @@ export function useAccountBalance(address?: string) {
   }, [isEthBalance, price]);
 
   useEffect(() => {
+    console.log("fetchedBalance:", fetchedBalanceData);
     if (fetchedBalanceData?.formatted) {
       setBalance(Number(fetchedBalanceData.formatted));
     }
   }, [fetchedBalanceData]);
 
-  return { balance, price, isError, isLoading, onToggleBalance, isEthBalance };
+  // console.log("balance:", balance);
+  // console.log("isLoading:", isLoading);
+
+  return { balance, price, isError, isLoading, onToggleBalance, isEthBalance, refetch };
 }

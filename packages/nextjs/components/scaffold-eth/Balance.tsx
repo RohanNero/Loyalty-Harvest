@@ -11,6 +11,7 @@ type TBalanceProps = {
  */
 export const Balance = ({ address, className = "" }: TBalanceProps) => {
   const configuredNetwork = getTargetNetwork();
+  console.log("configured Network:", configuredNetwork);
   const { balance, price, isError, isLoading, onToggleBalance, isEthBalance } = useAccountBalance(address);
 
   if (!address || isLoading || balance === null) {

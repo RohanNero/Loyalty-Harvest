@@ -5,8 +5,6 @@ import React, { ChangeEvent, FormEvent, useState } from "react";
 import retry from "async-retry";
 import ErrorPopup from "~~/components/loyalty-harvest/ErrorPopup";
 
-/* eslint-disable */
-
 export default function CreateLeavesForm() {
   // State to manage input values
   const [formData, setFormData] = useState({
@@ -106,7 +104,7 @@ export default function CreateLeavesForm() {
           });
 
           // Parse the response JSON
-          let json = await response.json();
+          const json = await response.json();
 
           // If we receive a 429 error (Too Many Requests), log an error and retry
           if (json.error) {

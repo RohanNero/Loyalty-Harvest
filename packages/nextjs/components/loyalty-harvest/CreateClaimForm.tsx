@@ -427,7 +427,7 @@ export default function CreateClaimForm() {
         </div>
         <div className="col-span-1">
           <input
-            type="text"
+            type="number"
             name="eventId"
             placeholder="Event Id"
             className="border border-green-500 p-1.5 text-green-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
@@ -437,7 +437,7 @@ export default function CreateClaimForm() {
         </div>
         <div className="col-span-1">
           <input
-            type="text"
+            type="number"
             name="tokenId"
             placeholder="Token Id"
             className="border border-green-500 p-1.5 text-green-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
@@ -447,7 +447,7 @@ export default function CreateClaimForm() {
         </div>
         <div className="col-span-1">
           <input
-            type="text"
+            type="number"
             name="heldUntil"
             placeholder="Held until"
             className="border border-green-500 p-1.5 text-green-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"

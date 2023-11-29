@@ -7,10 +7,6 @@ import "viem/window";
 import claimAbi from "~~/abi/Claim";
 import ErrorPopup from "~~/components/loyalty-harvest/ErrorPopup";
 
-// import { useAccount } from "wagmi";
-// import { useScaffoldContractRead, useScaffoldContractWrite, useScaffoldEventSubscriber } from "~~/hooks/scaffold-eth";
-// import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
-
 /** This function creates a `RewardEvent` by calling `createRewardEvent` in the `Claim.sol` contract
  *
  * Input:
@@ -25,15 +21,11 @@ import ErrorPopup from "~~/components/loyalty-harvest/ErrorPopup";
  * 9. totalHeld - total number of blocks any NFT was held for during the event
  *
  * OUTPUT:
- * 
+ *
  * What output would this return?
  * 1. `createRewardEvent()` tx hash
  * 2. `eventId` of the created event (used to track merkle trees in the database)
- * 
- * 
-  TEMP THOUGHTS:
-  1. We probably don't need to pass `root` since we can calculate it from the tree, more explicit but not needed.
-  */
+ */
 export default function CreateEventForm() {
   // State to manage input values
   // const [account, setAccount] = useState<Address>();
@@ -185,30 +177,38 @@ export default function CreateEventForm() {
     });
     const [address] = await walletClient.requestAddresses();
 
-    // Define abi for `createRewardEvent()` function in `Claim.sol`
-    // const claimAbi = [
-    //   {
-    //     inputs: [
-    //       { internalType: "address", name: "_nftContract", type: "address" },
-    //       { internalType: "address", name: "_rewardToken", type: "address" },
-    //       { internalType: "address", name: "_creator", type: "address" },
-    //       { internalType: "bytes32", name: "_root", type: "bytes32" },
-    //       { internalType: "uint256", name: "_blockStart", type: "uint256" },
-    //       { internalType: "uint256", name: "_blockEnd", type: "uint256" },
-    //       { internalType: "uint256", name: "_rewardAmount", type: "uint256" },
-    //       { internalType: "uint256", name: "_nfts", type: "uint256" },
-    //       { internalType: "uint256", name: "_totalHeld", type: "uint256" },
-    //     ],
-    //     name: "createRewardEvent",
-    //     outputs: [{ internalType: "uint256", name: "eventId", type: "uint256" }],
-    //     stateMutability: "payable",
-    //     type: "function",
-    //   },
-    // ];
-
     // Check formData input and throw error if anything is invalid
     try {
       await checkInput();
+
+      // Encode tx data
+      const data = encodeFunctionData({
+        abi: claimAbi,
+        functionName: "createRewardEvent",
+        args: [
+          formData.nftContract,
+          formData.rewardToken,
+          formData.creator,
+          formData.root as `0x${string}`,
+          BigInt(formData.blockStart),
+          BigInt(formData.blockEnd),
+          BigInt(formData.rewardAmount),
+          BigInt(formData.nfts),
+          BigInt(formData.totalHeld),
+        ],
+      });
+
+      // Send the `createRewardEvent()` transaction
+      const hash = await walletClient.sendTransaction({
+        account: address,
+        to: "0x01cA0957898BfB42d7620a355d98014a4731Ea8D", // hard-coded to sepolia `claim.sol`
+        // to: "0x2427F2289D88121fAeEdBfb1401069DE7ebA31Da", // hard-coded to sepolia `claim.sol` - Broken
+        data,
+      });
+      console.log("hash:", hash);
+
+      setIsLoading(false);
+      setEventData({ hash: "", eventId: "" });
     } catch (error: any) {
       // Notify user with an error pop up
       await notifyUser(error);
@@ -216,38 +216,6 @@ export default function CreateEventForm() {
       setIsLoading(false);
       return;
     }
-
-    // Encode tx data
-    const data = encodeFunctionData({
-      abi: claimAbi,
-      functionName: "createRewardEvent",
-      args: [
-        formData.nftContract,
-        formData.rewardToken,
-        formData.creator,
-        formData.root as `0x${string}`,
-        BigInt(formData.blockStart), // Convert numbers to bigint
-        BigInt(formData.blockEnd),
-        BigInt(formData.rewardAmount),
-        BigInt(formData.nfts),
-        BigInt(formData.totalHeld),
-      ],
-    });
-
-    // Send the `createRewardEvent()` transaction
-    const hash = await walletClient.sendTransaction({
-      account: address,
-      to: "0x01cA0957898BfB42d7620a355d98014a4731Ea8D", // hard-coded to sepolia `claim.sol`
-      // to: "0x2427F2289D88121fAeEdBfb1401069DE7ebA31Da", // hard-coded to sepolia `claim.sol` - Broken
-      data,
-    });
-    console.log("hash:", hash);
-
-    //console.log(isLoading);
-    //console.log(writeAsync);
-    console.log("wrote async?");
-    setIsLoading(false);
-    setEventData({ hash: "", eventId: "" });
   };
 
   // Function to handle copying transaction hash to clipboard
@@ -304,7 +272,7 @@ export default function CreateEventForm() {
         </div>
         <div className="col-span-1">
           <input
-            type="text"
+            type="number"
             name="rewardAmount"
             placeholder="Reward Token Amount"
             className="border p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
@@ -334,7 +302,7 @@ export default function CreateEventForm() {
         </div>
         <div className="col-span-1">
           <input
-            type="text"
+            type="number"
             name="blockStart"
             placeholder="Block starting number"
             className="border p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
@@ -344,7 +312,7 @@ export default function CreateEventForm() {
         </div>
         <div className="col-span-1">
           <input
-            type="text"
+            type="number"
             name="blockEnd"
             placeholder="Block ending number"
             className="border p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
@@ -354,7 +322,7 @@ export default function CreateEventForm() {
         </div>
         <div className="col-span-1">
           <input
-            type="text"
+            type="number"
             name="nfts"
             placeholder="Amount of NFTs"
             className="border p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
@@ -364,7 +332,7 @@ export default function CreateEventForm() {
         </div>
         <div className="col-span-1">
           <input
-            type="text"
+            type="number"
             name="totalHeld"
             placeholder="Total blocks held"
             className="border p-1.5 text-purple-400 focus:ring-0 rounded w-full bg-green-200 hover:bg-green-300"
@@ -381,13 +349,7 @@ export default function CreateEventForm() {
           </button>
         </div>
       </form>
-      {/* Conditionally render the result */}
-      {/* {eventData && eventData.success && (
-        <div className="mt-4 p-3 border border-purple-700 rounded bg-green-200">
-          <h4 className="text-lg font-semibold text-purple-700 mb-2">Merkle Root:</h4>
-          <div className="text-lg font-semibold text-purple-400 mb-2">{eventData.root} </div>
-        </div>
-      )} */}
+      {/* Conditionally render the loading object */}
       {isLoading && <div className="text-lg text-purple-700 font-semibold">Loading... </div>}
 
       {/* Button to copy leaves data to clipboard */}
