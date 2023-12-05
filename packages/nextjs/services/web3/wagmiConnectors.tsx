@@ -19,11 +19,9 @@ import { getTargetNetwork } from "~~/utils/scaffold-eth";
 const configuredNetwork = getTargetNetwork();
 const { onlyLocalBurnerWallet } = scaffoldConfig;
 
-// We always want to have mainnet enabled (ENS resolution, ETH price, etc). But only once.
-const enabledChains =
-  configuredNetwork.id === 1
-    ? [configuredNetwork]
-    : [configuredNetwork, chains.mainnet, chains.sepolia, chains.polygon, chains.polygonMumbai];
+// We always want to have mainnet enabled (ENS resolution, ETH price, etc).
+const allChains = [...Object.values(chains), configuredNetwork];
+const enabledChains = configuredNetwork.id === 1 ? [configuredNetwork] : allChains;
 
 /**
  * Chains for the app
@@ -48,7 +46,7 @@ export const appChains = configureChains(
   },
 );
 
-const walletsOptions = { chains: Object.values(chains), projectId: scaffoldConfig.walletConnectProjectId };
+const walletsOptions = { chains: appChains.chains, projectId: scaffoldConfig.walletConnectProjectId };
 const wallets = [
   metaMaskWallet({ ...walletsOptions, shimDisconnect: true }),
   walletConnectWallet(walletsOptions),
