@@ -2,12 +2,11 @@ import createProof from "../../utils/loyalty-harvest/createProof";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function createProofAPI(req: NextApiRequest, res: NextApiResponse) {
-  const { eventId, holder } = req.body;
-  console.log("eventId:", eventId);
-  console.log("holder:", holder);
+  const { holder, leaves } = req.body;
+  // console.log("req body:", req.body);
 
   try {
-    const proof = await createProof(eventId, holder);
+    const proof = await createProof(holder, leaves);
     console.log("proofData API proof:", proof);
     res.status(200).json({ success: true, proof });
   } catch (error: any) {

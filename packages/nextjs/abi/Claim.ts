@@ -2,7 +2,22 @@ const claimAbi = [
   { inputs: [], name: "Claim__AlreadyClaimed", type: "error" },
   { inputs: [], name: "Claim__InvalidCaller", type: "error" },
   { inputs: [], name: "Claim__InvalidProof", type: "error" },
-  { inputs: [], name: "Claim__InvalidSigner", type: "error" },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "signer",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "holder",
+        type: "address",
+      },
+    ],
+    name: "Claim__InvalidSigner",
+    type: "error",
+  },
   { inputs: [], name: "Claim__MustProvideRootIfContestIsOver", type: "error" },
   { inputs: [], name: "Claim__MustSendRewardAmount", type: "error" },
   {

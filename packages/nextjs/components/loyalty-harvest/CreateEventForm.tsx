@@ -1,11 +1,13 @@
 "use client";
 
 import React, { ChangeEvent, FormEvent, useState } from "react";
-import { createWalletClient, custom, encodeFunctionData } from "viem";
-import { sepolia } from "viem/chains";
+import { chainData } from "../../utils/scaffold-eth/networks";
+import { createPublicClient, createWalletClient, custom, encodeFunctionData } from "viem";
 import "viem/window";
 import claimAbi from "~~/abi/Claim";
+import ERC20Abi from "~~/abi/ERC20";
 import ErrorPopup from "~~/components/loyalty-harvest/ErrorPopup";
+import { getTargetNetwork } from "~~/utils/scaffold-eth";
 
 /** This function creates a `RewardEvent` by calling `createRewardEvent` in the `Claim.sol` contract
  *
@@ -27,6 +29,7 @@ import ErrorPopup from "~~/components/loyalty-harvest/ErrorPopup";
  * 2. `eventId` of the created event (used to track merkle trees in the database)
  */
 export default function CreateEventForm() {
+  const configuredNetwork = getTargetNetwork();
   // State to manage input values
   // const [account, setAccount] = useState<Address>();
   const [formData, setFormData] = useState({
@@ -172,16 +175,64 @@ export default function CreateEventForm() {
       return;
     }
     const walletClient = createWalletClient({
-      chain: sepolia,
       transport: custom(window.ethereum),
+      chain: configuredNetwork,
     });
     const [address] = await walletClient.requestAddresses();
+    const claimAddress = chainData[configuredNetwork.id].claimAddress;
 
     // Check formData input and throw error if anything is invalid
     try {
+      if (!claimAddress) {
+        throw new Error("Claim address is undefined!");
+      }
       await checkInput();
+      const publicClient = createPublicClient({
+        transport: custom(window.ethereum),
+      });
 
-      // Encode tx data
+      // Approve ERC20 to be `transferFrom`d to the `Claim.sol` contract
+      console.log("reward token boolean:", formData.rewardToken !== "0x0000000000000000000000000000000000000000");
+      if (formData.rewardToken !== "0x0000000000000000000000000000000000000000") {
+        // First check if allowance is less than rewardAmount
+
+        console.log("address:", address);
+        const callData = encodeFunctionData({
+          abi: ERC20Abi,
+          functionName: "allowance",
+          args: [address, claimAddress],
+        });
+        if (publicClient == undefined) {
+          throw new Error("publicClient is undefined!");
+        }
+        console.log("allowanceCallData:", callData);
+        const allowance = await publicClient.call({
+          data: callData,
+          to: formData.rewardToken, // hard-coded to sepolia `Silver.sol`
+        });
+        if (!allowance || !allowance.data) {
+          throw new Error("Allowance is undefined!");
+        }
+        console.log("allowance:", allowance);
+        console.log("allowanceInt:", parseInt(allowance.data));
+        if (parseInt(allowance.data) < parseInt(formData.rewardAmount)) {
+          console.log("Approving Claim.sol to transfer tokens...");
+          const approveData = encodeFunctionData({
+            abi: ERC20Abi,
+            functionName: "approve",
+            args: [claimAddress, BigInt(1e28)],
+          });
+          console.log("approveData:", approveData);
+          const approveHash = await walletClient.sendTransaction({
+            account: address,
+            to: formData.rewardToken,
+            data: approveData,
+          });
+          console.log("approveHash:", approveHash);
+        }
+      }
+
+      // Encode tx data for createRewardEvent
       const data = encodeFunctionData({
         abi: claimAbi,
         functionName: "createRewardEvent",
@@ -201,15 +252,31 @@ export default function CreateEventForm() {
       // Send the `createRewardEvent()` transaction
       const hash = await walletClient.sendTransaction({
         account: address,
-        to: "0x01cA0957898BfB42d7620a355d98014a4731Ea8D", // hard-coded to sepolia `claim.sol`
-        // to: "0x2427F2289D88121fAeEdBfb1401069DE7ebA31Da", // hard-coded to sepolia `claim.sol` - Broken
+        to: claimAddress,
         data,
       });
       console.log("hash:", hash);
+      const transaction = await publicClient.waitForTransactionReceipt({ hash: hash as `0x${string}` });
+      const logIndex = formData.rewardToken == "0x0000000000000000000000000000000000000000" ? 0 : 2;
+      console.log("tx:", transaction);
+      console.log("logs:", transaction.logs);
+      const value = transaction.logs[logIndex].data;
+      console.log("value:", value);
+      const intValue = parseInt(value);
+      console.log("parseValue:", intValue);
 
       setIsLoading(false);
-      setEventData({ hash: "", eventId: "" });
+      setEventData({ hash: hash, eventId: intValue.toString() });
     } catch (error: any) {
+      if (error.toString().includes('InvalidAddressError: Address "undefined" is invalid.')) {
+        console.log("error conditional reached");
+        await notifyUser(
+          error +
+            " Ensure there is a claimAddress for your current chain inside utils/scaffold-eth/networks's chainData object",
+        );
+        setIsLoading(false);
+        return;
+      }
       // Notify user with an error pop up
       await notifyUser(error);
       // Set loading to false since an error occurred
@@ -247,8 +314,8 @@ export default function CreateEventForm() {
   };
 
   return (
-    <div className="bg-secondary font-mono py-3 mb-4 w-1/2 flex-col flex items-center justify-center w-2/3">
-      <h3 className="text-xl text-green-300 justify-self-center mb-4">Create Reward Event</h3>
+    <div className="bg-secondary font-mono py-3 mb-4 flex-col flex items-center justify-center w-2/3">
+      <h3 className="text-xl text-base-100 justify-self-center mb-4">Create Reward Event</h3>
       <form className="text-center w-full grid grid-cols-2 gap-2 items-center justify-center" onSubmit={handleSubmit}>
         <div className="col-span-1">
           <input
@@ -343,7 +410,7 @@ export default function CreateEventForm() {
         <div className="col-span-1">
           <button
             type="submit"
-            className="bg-secondary border text-base-100 rounded my-2 px-4 py-2 bg-gradient-to-r from-green-200 via-secondary to-green-200 hover:via-green-200 hover:to-green-200 hover:shadow-lg hover:-translate-y-1   hover:bg-green-300 w-full"
+            className="bg-secondary border text-base-100 rounded my-2 px-4 py-2 bg-gradient-to-r from-green-200 via-secondary to-green-200 hover:via-green-200 hover:to-green-200 hover:shadow-lg hover:-translate-y-1 hover:bg-green-300 w-full"
           >
             Create
           </button>
@@ -352,20 +419,22 @@ export default function CreateEventForm() {
       {/* Conditionally render the loading object */}
       {isLoading && <div className="text-lg text-purple-700 font-semibold">Loading... </div>}
 
-      {/* Button to copy leaves data to clipboard */}
+      {/* Button to copy hash and eventId to clipboard */}
       {eventData.hash !== "" && eventData.eventId !== "" && (
-        <div className="flex gap-7">
+        <div className="flex justify-center gap-7">
           <button
             onClick={copyEventId}
-            className="bg-purple-700 border-purple-800 border text-green-300 rounded my-2 px-4 py-2 bg-gradient-to-r from-green-400 to-purple-700 hover:to-purple-500 hover:from-green-300 hover:text-purple-600 hover:shadow-lg hover:-translate-y-1 hover:bg-green-300 w-1/2"
+            title="Click to copy"
+            className="bg-secondary border text-base-100 rounded my-2 px-4 py-2 hover:shadow-lg hover:-translate-y-1 hover:bg-green-200 w-1/3"
           >
-            Copy Event Id
+            {`EventId: ${eventData.eventId}`}
           </button>
           <button
             onClick={copyHash}
-            className="bg-purple-700 border-purple-800 border text-green-300 rounded my-2 px-4 py-2 bg-gradient-to-r from-green-400 to-purple-700 hover:to-purple-500 hover:from-green-300 hover:text-purple-600 hover:shadow-lg hover:-translate-y-1 hover:bg-green-300 w-1/2"
+            title="Click to copy"
+            className="bg-secondary truncate border text-base-100 rounded my-2 px-4 py-2 hover:shadow-lg hover:-translate-y-1 hover:bg-green-200 w-1/3"
           >
-            Copy Transaction hash to Clipboard
+            {`Hash: ${eventData.hash}`}
           </button>
         </div>
       )}

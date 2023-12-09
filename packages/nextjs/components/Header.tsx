@@ -114,7 +114,7 @@ export const Header = () => {
         <select
           defaultValue={chain?.id && includedChains.includes(chain?.id) ? undefined : "Select Network"}
           value={chain?.id && includedChains.includes(chain?.id) ? undefined : "Select Network"}
-          className="select select-sm sm:w-fit w-20 mr-2"
+          className="select select-sm sm:w-fit w-20 mr-2 bg-gray-200"
           style={{ borderWidth: 1, borderColor: networkColor }}
           onChange={event => {
             const [, id] = event.target.value.split("|");

@@ -8,11 +8,12 @@ export type ChainAttributes = {
   // for networks having native currency other than ETH
   priceFeed: string;
   url?: string;
+  claimAddress?: string;
 };
 
 // To allow your dapp to live on another chain, simply add its chainId to this array.
 // Entire list of chains: https://github.com/wevm/viem/blob/main/src/chains/index.ts
-export const includedChains = [1, 11155111, 137, 80001, 100, 43114, 43113, 5];
+export const includedChains = [1, 11155111, 137, 80001, 100, 43114, 43113, 5, 31337];
 
 // If adding a chain not listed below, provide a hex string color and a pricefeed address
 // from: https://docs.chain.link/data-feeds/price-feeds/addresses?network=ethereum&page=1
@@ -20,6 +21,7 @@ export const chainData: Record<string, ChainAttributes> = {
   [chains.hardhat.id]: {
     color: "#b8af0c",
     priceFeed: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419", // ETH (On Ethereum)
+    claimAddress: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
   },
   [chains.mainnet.id]: {
     color: "#ff8b9e",
@@ -28,6 +30,7 @@ export const chainData: Record<string, ChainAttributes> = {
   [chains.sepolia.id]: {
     color: "#5f4bb6",
     priceFeed: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419", // ETH (On Ethereum)
+    claimAddress: "0x01cA0957898BfB42d7620a355d98014a4731Ea8D",
   },
   [chains.goerli.id]: {
     color: "#0975F6",
@@ -81,6 +84,8 @@ export const chainData: Record<string, ChainAttributes> = {
   [chains.avalancheFuji.id]: {
     color: "#FFC033",
     priceFeed: "0xFF3EEb22B5E3dE6e705b44749C2559d704923FD7", // AVAX (On Ethereum)
+    // claimAddress: "0x5b50F2DF5BEF22E180c49fDe7d4d678691216A3d",
+    claimAddress: "0xA0eF111679047eD34955289aDE9035ac855A72cC",
   },
 };
 

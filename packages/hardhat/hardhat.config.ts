@@ -6,7 +6,55 @@ import "hardhat-deploy";
 import "@matterlabs/hardhat-zksync-solc";
 import "@matterlabs/hardhat-zksync-verify";
 import "@nomicfoundation/hardhat-foundry";
+import claimAbi from "./abi/Claim";
 
+// This task creates a RewardEvent
+task("createEvent", "calls `createRewardEvent()` in `Claim.sol`")
+  .addParam("chain", "specifies which chain to use")
+  .setAction(async taskArgs => {
+    let claim;
+
+    if (taskArgs.chain == "localhost") {
+      console.log("grab contract");
+      claim = await ethers.getContractAt(claimAbi, "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9");
+      //console.log("claim:", claim);
+      console.log("claim:", claim);
+      const tx = await claim.createRewardEvent(
+        "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+        "0x0000000000000000000000000000000000000000",
+        "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+        "0x2339686dc2aa15ee5a5916238b2d53185bea092778524f4cacd6ad7a4fd9f67a",
+        2,
+        4,
+        0,
+        4,
+        8,
+      );
+      console.log("tx:", tx);
+    }
+  });
+
+// This task creates a signature on avalanche
+task("createSig", "calls `createRewardEvent()` in `Claim.sol`")
+  .addParam("chain", "specifies which chain to use")
+  .setAction(async taskArgs => {
+    if (taskArgs.chain == "avalancheFuji") {
+      function hashMessage(message: string) {
+        const mBuf: Buffer = Buffer.from(message, "utf8");
+        const msgSize: Buffer = Buffer.alloc(4);
+        msgSize.writeUInt32BE(mBuf.length, 0);
+        const msgBuf: Buffer = Buffer.from(`0x1AAvalanche Signed Message:\n${msgSize}${message}`, "utf8");
+        const hash: Buffer = createHash("sha256").update(msgBuf).digest();
+        const hashex: string = hash.toString("hex");
+        const hashBuff: Buffer = Buffer.from(hashex, "hex");
+        const messageHash: string = "0x" + hashex;
+        console.log("hashBuff:", hashBuff);
+        console.log("messageHash:", messageHash);
+        return { hashBuff, messageHash };
+      }
+      hashMessage("0xe4A98D2bFD66Ce08128FdFFFC9070662E489a28E");
+    }
+  });
 // If not set, it uses ours Alchemy's default API key.
 // You can get your own at https://dashboard.alchemyapi.io
 const providerApiKey = process.env.ALCHEMY_API_KEY || "oKxs-03sij-U_N0iOlrSsZFr29-IqbuF";
@@ -121,6 +169,10 @@ const config: HardhatUserConfig = {
     },
     scroll: {
       url: "https://rpc.scroll.io",
+      accounts: [deployerPrivateKey],
+    },
+    avalancheFuji: {
+      url: "https://avalanche-fuji.drpc.org/",
       accounts: [deployerPrivateKey],
     },
   },

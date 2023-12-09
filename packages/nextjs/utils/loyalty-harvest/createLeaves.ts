@@ -1,20 +1,17 @@
 import nftAbi from "../../abi/NFT";
-// import getRpc from "../getRpc";
-import * as dotenv from "dotenv";
-import { createPublicClient, http } from "viem";
-import { sepolia } from "viem/chains";
-
-dotenv.config();
-
-// Initialize viem public client
-const client = createPublicClient({
-  chain: sepolia,
-  transport: http(process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL),
-});
+import { createPublicClient, custom } from "viem";
 
 // This function gets the owner of all nfts at starting block number
 async function getOwnerAtBlock(nftAddress: string, tokenId: number, blockStart: number) {
-  const owner = await client.readContract({
+  if (!window || !window.ethereum) {
+    console.log("window is undefined!");
+    return;
+  }
+  const publicClient = createPublicClient({
+    transport: custom(window.ethereum),
+    //transport: http(process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL),
+  });
+  const owner = await publicClient.readContract({
     address: nftAddress,
     abi: nftAbi,
     functionName: "ownerOf",
@@ -26,11 +23,23 @@ async function getOwnerAtBlock(nftAddress: string, tokenId: number, blockStart: 
 
 // This function gets all the `Transfer` events during the reward event timeframe
 async function getTransferEvents(nftAddress: string, blockStart: number, blockEnd: number) {
-  const events = await client.getContractEvents({
+  if (!window || !window.ethereum) {
+    console.log("window is undefined!");
+    return;
+  }
+  //Initialize viem public client
+  const publicClient = createPublicClient({
+    transport: custom(window.ethereum),
+    // transport: http(process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL),
+  });
+  console.log("blockStart:", +blockStart + 1);
+  const adjustedStart = +blockStart + 1;
+
+  const events = await publicClient.getContractEvents({
     address: nftAddress,
     abi: nftAbi,
     eventName: "Transfer",
-    fromBlock: BigInt(blockStart),
+    fromBlock: BigInt(adjustedStart),
     toBlock: BigInt(blockEnd),
   });
   return events;
@@ -59,6 +68,7 @@ export default async function createLeaves(
   blockEnd: number,
   totalSupply: number,
 ) {
+  console.log("createLeaves input:", nftAddress, blockStart, blockEnd, totalSupply);
   const leaves = [];
 
   // Loop through NFTs and set initial leaf data
@@ -71,9 +81,13 @@ export default async function createLeaves(
   // Get all the Transfer events for reward event
   const events = await getTransferEvents(nftAddress, blockStart, blockEnd);
 
-  // Loop through the Transfer events to set `heldUntil` block for respective NFTs
-  for (const event of events) {
-    leaves[Number(event.args.tokenId)][3] = event.blockNumber.toString();
+  if (events) {
+    // Loop through the Transfer events to set `heldUntil` block for respective NFTs
+    console.log("leaves:", leaves);
+    console.log("events:", events);
+    for (const event of events) {
+      leaves[Number(event.args.tokenId)][3] = event.blockNumber.toString();
+    }
   }
 
   // Calculate the `totalHeld` value by looping through the

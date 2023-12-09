@@ -12,7 +12,7 @@ error Claim__InvalidProof();
 error Claim__InvalidTimestamps();
 error Claim__RewardTransferFailed();
 error Claim__MustProvideRootIfContestIsOver();
-error Claim__InvalidSigner();
+error Claim__InvalidSigner(address signer, address holder);
 error Claim__MustSendRewardAmount();
 error Claim__InvalidCaller();
 
@@ -108,14 +108,15 @@ contract Claim {
         bytes32 messageHash = keccak256(abi.encodePacked(info.to));
         // format the message hash 
         bytes32 signedMessageHash = keccak256(
-            abi.encodePacked("\x19Ethereum Signed Message:\n32", messageHash)
+            abi.encodePacked("0x1AAvalanche Signed Message:\n", messageHash)
+            // abi.encodePacked("\x19Ethereum Signed Message:\n32", messageHash)
         );
         // recover the signer
         address signer = _recoverSigner(signedMessageHash, signature);
 
         // revert if signer address isn't the holder
         if (signer != info.holder) {
-            revert Claim__InvalidSigner();
+            revert Claim__InvalidSigner(signer, info.holder);
         }
 
         uint portion = _claim(proof, info);

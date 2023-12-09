@@ -1,7 +1,10 @@
 "use client";
 
-import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import React, { ChangeEvent, FormEvent, useState } from "react";
+import { chainData } from "../../utils/scaffold-eth/networks";
 import {
+  BaseError,
+  ContractFunctionRevertedError,
   createPublicClient,
   createWalletClient,
   custom,
@@ -9,10 +12,10 @@ import {
   decodeFunctionResult,
   encodeFunctionData,
 } from "viem";
-import { sepolia } from "viem/chains";
 import "viem/window";
 import claimAbi from "~~/abi/Claim";
 import ErrorPopup from "~~/components/loyalty-harvest/ErrorPopup";
+import { getTargetNetwork } from "~~/utils/scaffold-eth";
 
 /** This function allows anyone to send a transaction to `claim()` or `claimWithSignature()` in the `Claim.sol` contract
  * 
@@ -37,6 +40,8 @@ import ErrorPopup from "~~/components/loyalty-harvest/ErrorPopup";
     - Just need to view the `rewardAddress` and then make a `symbol()`/`name()` call to see what it is
   */
 export default function CreateClaimForm() {
+  const configuredNetwork = getTargetNetwork();
+
   // State to manage input values
   const [data, setData] = useState({
     proof: [],
@@ -58,28 +63,6 @@ export default function CreateClaimForm() {
   const [showErrorPopup, setShowErrorPopup] = useState(false);
 
   // Initialize Viem client objects
-
-  // if (!window.ethereum) {
-  //   console.log("Window.ethereum is undefined!");
-  //   throw new Error("Window.ethereum is undefined!");
-  // }
-  // const publicClient = createPublicClient({
-  //   chain: sepolia,
-  //   transport: custom(window.ethereum),
-  // });
-  // State variable to store Viem public client
-
-  let publicClient: ReturnType<typeof createPublicClient> | undefined;
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.ethereum) {
-      publicClient = createPublicClient({
-        chain: sepolia,
-        transport: custom(window.ethereum),
-      });
-    } else {
-      throw new Error("Window ethereum is undefined!");
-    }
-  }, []);
 
   // Function to handle input changes
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -147,17 +130,27 @@ export default function CreateClaimForm() {
   };
 
   // Ensure the eventId is valid
-  const isValidEventId = async (eventId: string) => {
+  const isValidEventId = async (claimAddress: string, eventId: string) => {
     const callData = encodeFunctionData({
       abi: claimAbi,
       functionName: "viewEventMapLength",
+    });
+
+    if (!window || !window?.ethereum) {
+      throw new Error("Window is undefined!");
+    }
+
+    const publicClient = createPublicClient({
+      // chain: sepolia,
+      transport: custom(window.ethereum),
     });
     if (publicClient == undefined) {
       throw new Error("publicClient is undefined!");
     }
     const length = await publicClient.call({
       data: callData,
-      to: "0x01cA0957898BfB42d7620a355d98014a4731Ea8D",
+      // to: "0x01cA0957898BfB42d7620a355d98014a4731Ea8D",
+      to: claimAddress,
     });
     if (!length || !length.data) {
       console.log("Error getting the eventMap length!");
@@ -174,13 +167,13 @@ export default function CreateClaimForm() {
   };
 
   // Ensure the heldUntil block is valid
-  const isValidHeldUntil = async (eventId: string, heldUntil: string) => {
+  const isValidHeldUntil = async (claimAddress: string, eventId: string, heldUntil: string) => {
     if (!window.ethereum) {
       console.log("window.ethereum is undefined!");
       throw new Error("window.ethereum is undefined!");
     }
     const publicClient = createPublicClient({
-      chain: sepolia,
+      // chain: sepolia,
       transport: custom(window.ethereum),
     });
     const callData = encodeFunctionData({
@@ -190,7 +183,8 @@ export default function CreateClaimForm() {
     });
     const eventData = await publicClient.call({
       data: callData,
-      to: "0x01cA0957898BfB42d7620a355d98014a4731Ea8D",
+      // to: "0x01cA0957898BfB42d7620a355d98014a4731Ea8D",
+      to: claimAddress,
     });
     console.log("eventData:", eventData);
     if (!eventData.data) {
@@ -211,7 +205,7 @@ export default function CreateClaimForm() {
   };
 
   // Format and check the input
-  const checkInput = async () => {
+  const checkInput = async (claimAddress: string) => {
     // Format args to pass for input check helper functions since data.proof is an array itself
     const inputArgs: string[] = [];
     const proofs = (data.proof as string[])
@@ -231,8 +225,8 @@ export default function CreateClaimForm() {
     await isValidTokenId();
 
     // "Advanced" Error handling (smart contract calls)
-    await isValidEventId(data.eventId);
-    await isValidHeldUntil(data.eventId, data.heldUntil);
+    await isValidEventId(claimAddress, data.eventId);
+    await isValidHeldUntil(claimAddress, data.eventId, data.heldUntil);
   };
 
   // Function to handle closing the error popup
@@ -275,15 +269,20 @@ export default function CreateClaimForm() {
       console.error("window.ethereum is undefined");
       return;
     }
+    console.log("configNetwork:", configuredNetwork);
     const walletClient = createWalletClient({
-      chain: sepolia,
+      chain: configuredNetwork,
       transport: custom(window.ethereum),
     });
     const [address] = await walletClient.requestAddresses();
+    const claimAddress = chainData[configuredNetwork.id].claimAddress;
 
     // Check formData input and throw error if anything is invalid
     try {
-      await checkInput();
+      if (!claimAddress) {
+        throw new Error("Claim address is undefined!");
+      }
+      await checkInput(claimAddress);
     } catch (error: any) {
       // Notify user with an error pop up
       await notifyUser(error);
@@ -315,14 +314,12 @@ export default function CreateClaimForm() {
       });
     } else {
       console.log("Encoding for `claimWithSignature()`...");
+      console.log("sig:", data.signature);
       txData = encodeFunctionData({
         abi: claimAbi,
         functionName: "claimWithSignature",
         args: [
-          data.proof
-            .toString()
-            .split(",")
-            .map((item: string) => `0x${item}` as const),
+          data.proof.toString().split(",") as readonly `0x${string}`[],
           data.signature as `0x${string}`,
           {
             holder: data.holder,
@@ -346,8 +343,8 @@ export default function CreateClaimForm() {
     try {
       hash = await walletClient.sendTransaction({
         account: address,
-        to: "0x01cA0957898BfB42d7620a355d98014a4731Ea8D", // hard-coded to sepolia `claim.sol`
-        // to: "0x2427F2289D88121fAeEdBfb1401069DE7ebA31Da", // hard-coded to sepolia `claim.sol` - Broken
+        // to: "0x01cA0957898BfB42d7620a355d98014a4731Ea8D", // hard-coded to sepolia `claim.sol`
+        to: claimAddress,
         data: txData,
       });
     } catch (error: any) {
@@ -362,10 +359,56 @@ export default function CreateClaimForm() {
     }
 
     console.log("hash:", hash);
+
+    const publicClient = createPublicClient({
+      // chain: sepolia,
+      transport: custom(window.ethereum),
+    });
     if (publicClient == undefined) {
       throw new Error("publicClient is undefined!");
     }
     const transaction = await publicClient.waitForTransactionReceipt({ hash: hash as `0x${string}` });
+    console.log("tx:", transaction);
+    console.log("logs:", transaction.logs);
+    if (!transaction.logs[0]) {
+      try {
+        console.log(data.signature == "" ? "claim" : "claimWithSignature");
+        const sim = await publicClient.simulateContract({
+          abi: claimAbi,
+          address: claimAddress,
+          args: [
+            data.proof.toString().split(",") as readonly `0x${string}`[],
+            data.signature as `0x${string}`,
+            {
+              holder: data.holder,
+              to: data.to,
+              tokenId: BigInt(data.tokenId),
+              eventId: BigInt(data.eventId),
+              heldUntil: BigInt(data.heldUntil),
+            },
+          ],
+          functionName: data.signature == "" ? "claim" : "claimWithSignature",
+        });
+        console.log("sim:", sim);
+      } catch (err) {
+        console.log("err", err);
+        if (err instanceof BaseError) {
+          const revertError = err.walk(err => err instanceof ContractFunctionRevertedError);
+          if (revertError instanceof ContractFunctionRevertedError) {
+            const errorName = revertError.data?.errorName ?? "";
+            console.log("errorData:", revertError.data);
+            console.log("error:", errorName);
+          }
+        }
+      }
+
+      await notifyUser(`Error sending transaction. Hash: ${hash}`);
+      setData(prevData => ({
+        ...prevData,
+        loading: false,
+      }));
+      return;
+    }
     const value = transaction.logs[0].data;
     console.log("parseValue:", parseInt(value));
 

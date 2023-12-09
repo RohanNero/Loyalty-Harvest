@@ -1,13 +1,16 @@
 "use client";
 
 import React, { ChangeEvent, FormEvent, useState } from "react";
+import { chainData } from "../../utils/scaffold-eth/networks";
 import { createPublicClient, custom, encodeFunctionData } from "viem";
-import { sepolia } from "viem/chains";
 import "viem/window";
 import claimAbi from "~~/abi/Claim";
 import ErrorPopup from "~~/components/loyalty-harvest/ErrorPopup";
+import createLeaves from "~~/utils/loyalty-harvest/createLeaves";
+import { getTargetNetwork } from "~~/utils/scaffold-eth";
 
 export default function CreateProofForm() {
+  const configuredNetwork = getTargetNetwork();
   // State to manage input values
   const [formData, setFormData] = useState({
     eventId: "",
@@ -55,13 +58,12 @@ export default function CreateProofForm() {
   };
 
   // Ensure the eventId is valid
-  const checkEventId = async (eventId: string) => {
+  const checkEventId = async (claimAddress: string, eventId: string) => {
     if (!window.ethereum) {
       console.log("Window.ethereum is undefined!");
       throw new Error("Window.ethereum is undefined!");
     }
     const publicClient = createPublicClient({
-      chain: sepolia,
       transport: custom(window.ethereum),
     });
     if (publicClient == undefined) {
@@ -73,7 +75,7 @@ export default function CreateProofForm() {
     });
     const length = await publicClient.call({
       data: callData,
-      to: "0x01cA0957898BfB42d7620a355d98014a4731Ea8D",
+      to: claimAddress,
     });
     if (!length || !length.data) {
       console.log("Error getting the eventMap length!");
@@ -90,9 +92,50 @@ export default function CreateProofForm() {
   };
 
   // Ensure input is valid
-  const checkInput = async () => {
+  const checkInput = async (claimAddress: string) => {
     await checkAddress(formData.holder);
-    await checkEventId(formData.eventId);
+    await checkEventId(claimAddress, formData.eventId);
+  };
+
+  // First part of proof creation (done in client side since we read data with viem)
+  const handleProofCreation = async (claimAddress: string) => {
+    if (!window || !window.ethereum) {
+      throw new Error("Window/Window Ethereum is undefined!");
+    }
+    const client = createPublicClient({
+      transport: custom(window.ethereum),
+    });
+    if (!client) {
+      throw new Error("Viem client is undefined!");
+    }
+    const eventData = await client.readContract({
+      // address: "0x01cA0957898BfB42d7620a355d98014a4731Ea8D", // Temporarily hard-coded to deployed Sepolia contract
+      address: claimAddress,
+      abi: claimAbi,
+      functionName: "viewEvent",
+      args: [BigInt(formData.eventId)],
+    });
+    const leavesData = await createLeaves(
+      eventData.nftContract,
+      Number(eventData.startBlock),
+      Number(eventData.endBlock),
+      Number(eventData.nfts),
+    );
+    const reqData = {
+      holder: formData.holder,
+      leaves: leavesData.leaves,
+    };
+
+    // Fetch proofData using `createMerkleAPI`
+    const proofData = await fetch("/api/createProofAPI", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(reqData),
+    });
+    console.log("proofData:", proofData);
+    return proofData;
   };
 
   // Function to handle form submission
@@ -101,15 +144,12 @@ export default function CreateProofForm() {
     try {
       setIsLoading(true);
       setProof({ proof: [] });
-      await checkInput();
-      // Fetch proofData using `createMerkleAPI`
-      const proofData = await fetch("/api/createProofAPI", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const claimAddress = chainData[configuredNetwork.id].claimAddress;
+      if (!claimAddress) {
+        throw new Error("Claim address is undefined!");
+      }
+      await checkInput(claimAddress);
+      const proofData = await handleProofCreation(claimAddress);
       const json = await proofData.json();
       console.log("proof:", json);
       if (json.proof.length < 1) {

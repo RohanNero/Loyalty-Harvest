@@ -3,7 +3,14 @@
 import React, { ChangeEvent, FormEvent, useState } from "react";
 // Used to ensure that the call suceeds past `exceeded rate limit` error
 import retry from "async-retry";
+import "viem/window";
 import ErrorPopup from "~~/components/loyalty-harvest/ErrorPopup";
+import createLeaves from "~~/utils/loyalty-harvest/createLeaves";
+
+interface LeavesData {
+  leaves: string[][];
+  totalHeld: number;
+}
 
 export default function CreateLeavesForm() {
   // State to manage input values
@@ -13,7 +20,7 @@ export default function CreateLeavesForm() {
     blockEnd: "",
     totalSupply: "",
   });
-  const [leafData, setLeafData] = useState({ leaves: [], held: 0 });
+  const [leafData, setLeafData] = useState<LeavesData>({ leaves: [], totalHeld: 0 });
   const [isLoading, setIsLoading] = useState(false);
 
   // State variable for storing error messages
@@ -82,38 +89,26 @@ export default function CreateLeavesForm() {
     e.preventDefault();
 
     // Call createLeaves with the input values
-    const { nftAddress, blockStart, blockEnd } = formData;
-    console.log("nftAddress:", nftAddress);
-    console.log("blockStart:", blockStart);
-    console.log("blockEnd:", blockEnd);
+    const { nftAddress, blockStart, blockEnd, totalSupply } = formData;
     try {
       console.log("formData:", formData);
-      setLeafData({ leaves: [], held: 0 });
+      setLeafData({ leaves: [], totalHeld: 0 });
       await checkInput();
 
       const leavesData = await retry(
         async () => {
           setIsLoading(true);
-          // Make the API request
-          const response = await fetch("/api/createLeavesAPI", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(formData),
-          });
-
-          // Parse the response JSON
-          const json = await response.json();
-
-          // If we receive a 429 error (Too Many Requests), log an error and retry
-          if (json.error) {
-            console.error("HTTP error 429: Too Many Requests, retrying...");
-            throw new Error("HTTP error 429: Too Many Requests, retrying...");
+          // const leaves = [];
+          const { leaves, totalHeld } = await createLeaves(
+            nftAddress,
+            Number(blockStart),
+            Number(blockEnd),
+            Number(totalSupply),
+          );
+          if (!leaves || !totalHeld) {
+            throw new Error("Leaves data is undefined!");
           }
-
-          // Otherwise, return the response JSON
-          return json;
+          return { leaves, totalHeld } as LeavesData;
         },
         {
           retries: 5, // Number of retries before giving up
@@ -125,18 +120,17 @@ export default function CreateLeavesForm() {
       );
 
       setIsLoading(false);
-      setLeafData({ leaves: leavesData.leaves, held: leavesData.totalHeld });
+      setLeafData({
+        leaves: leavesData.leaves as string[][], // Ensure leavesData.leaves is not undefined
+        totalHeld: leavesData.totalHeld as number, // Provide a default value if totalHeld is undefined
+      });
       // Return the result
-      console.log("leaves:", leavesData.leaves);
-      console.log("held:", leavesData.totalHeld);
+      // console.log("leaves:", leavesData.leaves);
+      // console.log("held:", leavesData.totalHeld);
       return leavesData;
-
-      //const leaves = POST(formData);
-      //console.log("Merkle Tree Leaves:", fetchWithRetries);
     } catch (error: any) {
-      console.error("Error:", error);
+      console.log(error);
       setIsLoading(false);
-      // Notify user with an error pop up
       await notifyUser(error);
     }
   };
@@ -301,7 +295,7 @@ export default function CreateLeavesForm() {
             Copy Leaves Data to Clipboard
           </button>
           <div className="text-center pt-3 bg-purple-700 border-purple-800 border text-green-300 rounded my-2 px-4 py-2 bg-gradient-to-r from-green-400 to-purple-700 hover:to-purple-500 hover:from-green-300 hover:text-purple-600 hover:shadow-lg hover:-translate-y-1 hover:bg-green-300 w-1/2">
-            TotalHeld: {leafData.held.toString()}
+            TotalHeld: {leafData.totalHeld.toString()}
           </div>
         </div>
       )}
