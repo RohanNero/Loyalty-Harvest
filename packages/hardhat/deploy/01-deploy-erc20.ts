@@ -20,26 +20,24 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   */
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
-  const args = ["NonFun", "NFT"];
+  const args = [BigInt(1e28)];
 
-  const contract = await deploy("NFT", {
+  const contract = await deploy("Silver", {
     from: deployer,
     // Contract constructor arguments
-    args: args,
+    args: args, // Mints to msg.sender
     log: true,
     // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
     // automatically mining the contract deployment transaction. There is no effect on live networks.
     autoMine: true,
   });
-  // console.log("contract:", contract);
-  // console.log("addr:", contract.address);
 
   // Verify the contract
   console.log("Verifying contract...");
   await hre.run("verify:verify", {
     address: contract.address,
     constructorArguments: args,
-    contract: "contracts/NFT.sol:NFT",
+    contract: "contracts/ERC20.sol:Silver",
   });
 };
 
@@ -47,4 +45,4 @@ export default deployYourContract;
 
 // Tags are useful if you have multiple deploy files and only want to run one of them.
 // e.g. yarn deploy --tags YourContract
-deployYourContract.tags = ["Nft", "dev"];
+deployYourContract.tags = ["erc20", "dev"];

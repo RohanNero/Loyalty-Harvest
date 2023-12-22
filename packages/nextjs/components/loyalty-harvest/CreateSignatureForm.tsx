@@ -1,13 +1,20 @@
 "use client";
 
 import React, { ChangeEvent, FormEvent, useState } from "react";
-import { createWalletClient, custom } from "viem";
+import { chainData } from "../../utils/scaffold-eth/networks";
+import { createWalletClient, custom, hashTypedData } from "viem";
 import ErrorPopup from "~~/components/loyalty-harvest/ErrorPopup";
+import { getTargetNetwork } from "~~/utils/scaffold-eth";
 
 export default function CreateSignatureForm() {
+  // Current network
+  const configuredNetwork = getTargetNetwork();
+
   // State to manage input, output, and loading state values
   const [data, setData] = useState({
     address: "",
+    eventId: "",
+    tokenId: "",
     signature: "",
     loading: false,
   });
@@ -20,10 +27,10 @@ export default function CreateSignatureForm() {
 
   // Function to handle input changes
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
+    const { value, name } = e.target;
     setData(prevData => ({
       ...prevData,
-      address: value,
+      [name]: value,
     }));
   };
 
@@ -51,6 +58,75 @@ export default function CreateSignatureForm() {
     }
   };
 
+  // Returns EIP 712 signature
+  const getStructuredHash = async () => {
+    if (!window.ethereum) {
+      console.error("window.ethereum is undefined");
+      return;
+    }
+
+    if (!configuredNetwork || !configuredNetwork?.id) {
+      throw new Error("Network is undefined!");
+    }
+
+    const [account] = await window.ethereum.request({
+      method: "eth_requestAccounts",
+    });
+
+    const walletClient = createWalletClient({
+      account,
+      transport: custom(window.ethereum),
+    });
+
+    // Get the claim adress for the current chain
+    const claimAddress = chainData[configuredNetwork.id].claimAddress;
+
+    console.log("Domain args");
+    console.log("id:", configuredNetwork.id);
+    console.log("address:", claimAddress);
+
+    // All properties on a domain are optional
+    const domain = {
+      name: "Loyalty Harvest",
+      version: "1",
+      chainId: configuredNetwork.id,
+      verifyingContract: claimAddress,
+    };
+
+    // The named list of all type definitions
+    const types = {
+      Info: [
+        { name: "claimer", type: "address" },
+        { name: "eventId", type: "uint256" },
+        { name: "tokenId", type: "uint256" },
+      ],
+    };
+
+    const hash = await hashTypedData({
+      domain,
+      types,
+      primaryType: "Info",
+      message: {
+        claimer: data.address,
+        eventId: data.eventId,
+        tokenId: data.tokenId,
+      },
+    });
+    console.log("hash:", hash);
+
+    const signature = await walletClient.signTypedData({
+      domain,
+      types,
+      primaryType: "Info",
+      message: {
+        claimer: data.address,
+        eventId: data.eventId,
+        tokenId: data.tokenId,
+      },
+    });
+    return signature;
+  };
+
   // Function to handle form submission
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -60,33 +136,22 @@ export default function CreateSignatureForm() {
         signature: "",
         loading: true,
       }));
+
       await checkAddress(data.address);
 
-      if (!window.ethereum) {
-        console.error("window.ethereum is undefined");
-        return;
+      const signature = await getStructuredHash();
+      console.log("Signature:", signature);
+
+      if (!signature) {
+        throw new Error("Signature is undefined");
       }
-
-      const [account] = await window.ethereum.request({
-        method: "eth_requestAccounts",
-      });
-
-      const walletClient = createWalletClient({
-        account,
-        transport: custom(window.ethereum),
-      });
-
-      console.log("signing with:", data.address);
-      const signature = await walletClient.signMessage({
-        message: data.address,
-      });
-      console.log("signature:", signature);
 
       setData(prevData => ({
         ...prevData,
         signature: signature,
         loading: false,
       }));
+
       return signature;
     } catch (error: any) {
       console.error("Error:", error);
@@ -139,6 +204,22 @@ export default function CreateSignatureForm() {
           placeholder="Address"
           className="border border-green-500 p-1.5 text-green-400 focus:ring-0 rounded w-2/3 bg-green-200 hover:bg-green-300"
           value={data.address}
+          onChange={handleInputChange}
+        />
+        <input
+          type="text"
+          name="eventId"
+          placeholder="EventId"
+          className="border border-green-500 p-1.5 text-green-400 focus:ring-0 rounded w-2/3 bg-green-200 hover:bg-green-300"
+          value={data.eventId}
+          onChange={handleInputChange}
+        />
+        <input
+          type="text"
+          name="tokenId"
+          placeholder="TokenId"
+          className="border border-green-500 p-1.5 text-green-400 focus:ring-0 rounded w-2/3 bg-green-200 hover:bg-green-300"
+          value={data.tokenId}
           onChange={handleInputChange}
         />
         <button

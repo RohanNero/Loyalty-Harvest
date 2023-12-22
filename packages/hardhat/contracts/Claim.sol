@@ -3,8 +3,8 @@ pragma solidity ^0.8.18;
 
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-// import {console2} from "forge-std/Test.sol";
 import { UD60x18, convert, div, mul } from "@prb/math/UD60x18.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 error Claim__RewardPeriodHasntEnded(uint current, uint end);
 error Claim__AlreadyClaimed();
@@ -23,6 +23,35 @@ error Claim__InvalidCaller();
  *@dev Only compatible with ERC-721 compliant contracts
  */
 contract Claim {
+
+
+    /**@notice Domain seperator struct */
+    struct EIP712Domain {
+        string  name;
+        string  version;
+        uint256 chainId;
+        address verifyingContract;
+    }
+
+    /**@notice EIP 712 primary message struct */
+    struct Info {
+        address claimer;
+        uint256 eventId;
+        uint256 tokenId;
+    }
+
+    /**@notice Domain seperator type hash */
+    bytes32 constant EIP712DOMAIN_TYPEHASH = keccak256(
+        "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
+    );
+   
+    /**@notice Primary message type hash */
+    bytes32 constant INFO_TYPEHASH = keccak256(
+        "Info(address claimer,uint256 eventId,uint256 tokenId)"
+    );
+
+    /**@notice The actual domain seperator hash set inside constructor */
+    bytes32 public DOMAIN_SEPARATOR;
 
     /**@notice Each struct outlines the details of a reward event
      *@dev nftContract - the ERC721 contract
@@ -63,11 +92,13 @@ contract Claim {
     /**@notice Array from eventId to RewardEvent */
     RewardEvent[] public eventMap;
 
+    /**@notice Length of address in string form */
+    string public constant ADDRESS_LENGTH = "42";
+
     /**@notice Tracks whether or not rewards have been claimed for an NFT or not
      *@dev Set to true inside `claim()` */
     mapping(uint eventId => mapping(uint tokenId => bool hasClaimed))
         public claimMap;
-
 
     /**@notice Emitted when a new `RewardEvent` is created with `createRewardEvent()` */
     event EventCreated(uint eventId);
@@ -77,6 +108,19 @@ contract Claim {
 
     /**@notice Emitted when a creator updates their event */
     event EventUpdated(uint eventId, uint totalHeld, bytes32 root);
+
+
+    /**@notice Simply sets the DOMAIN_SEPERATOR variable */
+    constructor() {
+        // Calculate the domain seperator and store it
+       DOMAIN_SEPARATOR = keccak256(abi.encode(
+            EIP712DOMAIN_TYPEHASH,
+            keccak256(bytes("Loyalty Harvest")),
+            keccak256(bytes('1')),
+            block.chainid,
+            address(this)
+        ));
+    }
 
     /**@notice Anyone can claim after the endTime
      *@dev This uses `MerkleProof` lib to verify that the caller can receieve funds
@@ -90,31 +134,35 @@ contract Claim {
         bytes memory signature,
         ClaimInfo memory info
     ) public returns (uint) {
-        // ensure the event has ended
+        
+        // Ensure the event has ended
         if (block.number < eventMap[info.eventId].endBlock) {
             revert Claim__RewardPeriodHasntEnded(
                 block.number,
                 eventMap[info.eventId].endBlock
             );
         }
-        // ensure the user hasn't already claimed for this event and tokenId
+        // Ensure the user hasn't already claimed for this event and tokenId
         if (claimMap[info.eventId][info.tokenId]) {
             revert Claim__AlreadyClaimed();
         }
 
-        // Recover the signer's address
 
-        // create the message hash
-        bytes32 messageHash = keccak256(abi.encodePacked(info.to));
-        // format the message hash 
-        bytes32 signedMessageHash = keccak256(
-            abi.encodePacked("0x1AAvalanche Signed Message:\n", messageHash)
-            // abi.encodePacked("\x19Ethereum Signed Message:\n32", messageHash)
-        );
-        // recover the signer
-        address signer = _recoverSigner(signedMessageHash, signature);
+        // Calculate the struct hash
+        bytes32 structHash = keccak256(abi.encode(
+            INFO_TYPEHASH,
+            msg.sender,
+            info.eventId,
+            info.tokenId
+        ));
 
-        // revert if signer address isn't the holder
+        // Calculate the digest
+        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, structHash));
+
+        // Recover the signer
+        address signer = _recoverSigner(digest, signature);
+
+        // Revert if signer address isn't the holder
         if (signer != info.holder) {
             revert Claim__InvalidSigner(signer, info.holder);
         }
@@ -187,11 +235,12 @@ contract Claim {
         uint _nfts,
         uint _totalHeld
     ) public payable returns(uint eventId) {
-        // if event period is over, root has to be set
+        // If event period is over, the root has to be set
         if (block.number > _blockEnd && _root == 0) {
             revert Claim__MustProvideRootIfContestIsOver();
         }
-        // conditional to ensure that the creator sends the funds
+
+        // Conditional to ensure that the creator sends the funds
 
         // msg.value if native ETH
         if (_rewardToken == address(0)) {
@@ -266,7 +315,7 @@ contract Claim {
     }
 
     /**@notice Recovers the signer
-     *@dev from SMP's signature recovery */
+     *@dev from SMP's signature recovery https://solidity-by-example.org/signature/ */
     function _recoverSigner(
         bytes32 _signedMessageHash,
         bytes memory _signature
@@ -277,7 +326,7 @@ contract Claim {
     }
 
     /**@notice Splits the signature
-     *@dev From SMP's signature recovery */
+     *@dev From SMP's signature recovery: https://solidity-by-example.org/signature/ */
     function _splitSignature(
         bytes memory sig
     ) internal pure returns (bytes32 r, bytes32 s, uint8 v) {
@@ -309,23 +358,7 @@ contract Claim {
         bytes32[] memory proof,
         ClaimInfo memory info
     ) internal returns (uint) {
-        // Shouldn't the user's leaf hash be calculated with what is inside a leaf?
-        // AKA: info.holder, eventMap[info.eventId].nftContract, info.tokenId, info.heldUntil
-        // Leaf data doesn't include the eventId...
-
         // Calculate the user's `leaf` hash
-        // bytes32 leaf = keccak256(
-        //     bytes.concat(
-        //         keccak256(
-        //             abi.encode(
-        //                 info.holder,
-        //                 info.tokenId,
-        //                 info.eventId,
-        //                 info.heldUntil
-        //             )
-        //         )
-        //     )
-        // );
         bytes32 leaf = keccak256(
             bytes.concat(
                 keccak256(
@@ -338,14 +371,6 @@ contract Claim {
                 )
             )
         );
-        // Console logs used in testing
-        //console2.log("leaf:");
-        //console2.logBytes32(leaf);
-        //console2.log("root:");
-        //console2.logBytes32(eventMap[info.eventId].merkleRoot);
-        //console2.log("proof:");
-        //console2.logBytes32(proof[0]);
-        //console2.logBytes32(proof[1]);
 
         // Use MerkleProof lib to verify proof with root and leaf
         bool verified = MerkleProof.verify(
@@ -361,13 +386,11 @@ contract Claim {
 
         // Reward calculation
         uint reward = _calculateReward(info.eventId, info.heldUntil);
-        //console2.log("reward:", reward);
 
         // Now that we know the `reward` amount is, we can send it to the user
 
         // Transfer ETH if rewardToken isn't set
         if (eventMap[info.eventId].rewardToken == address(0)) {
-            //console2.log("Transfer ETH");
             (bool success, ) = info.to.call{value: reward}("");
             // Ensure call went through
             if (!success) {
@@ -396,21 +419,15 @@ contract Claim {
         uint totalReward = eventMap[eventId].rewardAmount;
         uint start = eventMap[eventId].startBlock;
         uint held = eventMap[eventId].totalHeld;
-        //console2.log("held:", held);
-        //console2.log("totalReward:", totalReward);
-
-
+        
         // Calculate how many blocks the user held for 
         uint userHeld = heldUntil - start;
-        //console2.log("userHeld:", userHeld);
+
         // Calculate the user's portion compared to `held`
         UD60x18 portion = div(convert(userHeld), convert(held));
-        uint test = convert(portion);
-        //console2.log("test:", test);
-        ////console2.log("portion:", portion);
+        
         // Calculate the reward amount based on the user's portion
-        uint reward = convert(mul(portion, convert(totalReward)));
-    
+        uint reward = convert(mul(portion, convert(totalReward))); 
 
         // Explicitly return the reward
         return reward;

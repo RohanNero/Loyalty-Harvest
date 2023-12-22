@@ -30,7 +30,9 @@ export const chainData: Record<string, ChainAttributes> = {
   [chains.sepolia.id]: {
     color: "#5f4bb6",
     priceFeed: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419", // ETH (On Ethereum)
-    claimAddress: "0x01cA0957898BfB42d7620a355d98014a4731Ea8D",
+    // claimAddress: "0x01cA0957898BfB42d7620a355d98014a4731Ea8D",
+    claimAddress: "0x3129124Ed8D20c4311B6eB8C7cB532947937B434",
+    //claimAddress: "0xad62636950E4D55D79863baecc54D9014940b210",
   },
   [chains.goerli.id]: {
     color: "#0975F6",
@@ -47,6 +49,8 @@ export const chainData: Record<string, ChainAttributes> = {
   [chains.polygonMumbai.id]: {
     color: "#92D9FA",
     priceFeed: "0x7bAC85A8a13A4BcD8abb3eB7d6b4d632c5a57676", // MATIC (On Ethereum)
+    claimAddress: "0xf0c4f07405ceD682251Fbe9F963B0Eb1B7479709",
+    // claimAddress: "0x93CFab61D5A4A899d10B8a63B60c873e0A656697",
   },
   [chains.optimismGoerli.id]: {
     color: "#f01a37",
@@ -84,8 +88,7 @@ export const chainData: Record<string, ChainAttributes> = {
   [chains.avalancheFuji.id]: {
     color: "#FFC033",
     priceFeed: "0xFF3EEb22B5E3dE6e705b44749C2559d704923FD7", // AVAX (On Ethereum)
-    // claimAddress: "0x5b50F2DF5BEF22E180c49fDe7d4d678691216A3d",
-    claimAddress: "0xA0eF111679047eD34955289aDE9035ac855A72cC",
+    claimAddress: "0x78E42E84C14fd5b01dA0f80d6d973c5f73370Fd3",
   },
 };
 

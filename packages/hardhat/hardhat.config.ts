@@ -3,10 +3,12 @@ dotenv.config();
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import "hardhat-deploy";
-import "@matterlabs/hardhat-zksync-solc";
-import "@matterlabs/hardhat-zksync-verify";
+// import "@matterlabs/hardhat-zksync-solc";
+// import "@matterlabs/hardhat-zksync-verify";
 import "@nomicfoundation/hardhat-foundry";
+import "@nomicfoundation/hardhat-verify";
 import claimAbi from "./abi/Claim";
+import "hardhat-contract-sizer";
 
 // This task creates a RewardEvent
 task("createEvent", "calls `createRewardEvent()` in `Claim.sol`")
@@ -34,35 +36,16 @@ task("createEvent", "calls `createRewardEvent()` in `Claim.sol`")
     }
   });
 
-// This task creates a signature on avalanche
-task("createSig", "calls `createRewardEvent()` in `Claim.sol`")
-  .addParam("chain", "specifies which chain to use")
-  .setAction(async taskArgs => {
-    if (taskArgs.chain == "avalancheFuji") {
-      function hashMessage(message: string) {
-        const mBuf: Buffer = Buffer.from(message, "utf8");
-        const msgSize: Buffer = Buffer.alloc(4);
-        msgSize.writeUInt32BE(mBuf.length, 0);
-        const msgBuf: Buffer = Buffer.from(`0x1AAvalanche Signed Message:\n${msgSize}${message}`, "utf8");
-        const hash: Buffer = createHash("sha256").update(msgBuf).digest();
-        const hashex: string = hash.toString("hex");
-        const hashBuff: Buffer = Buffer.from(hashex, "hex");
-        const messageHash: string = "0x" + hashex;
-        console.log("hashBuff:", hashBuff);
-        console.log("messageHash:", messageHash);
-        return { hashBuff, messageHash };
-      }
-      hashMessage("0xe4A98D2bFD66Ce08128FdFFFC9070662E489a28E");
-    }
-  });
 // If not set, it uses ours Alchemy's default API key.
 // You can get your own at https://dashboard.alchemyapi.io
 const providerApiKey = process.env.ALCHEMY_API_KEY || "oKxs-03sij-U_N0iOlrSsZFr29-IqbuF";
+const mumbaiApiKey = process.env.ALCHEMY_POLYGON_MUMBAI_KEY || "oKxs-03sij-U_N0iOlrSsZFr29-IqbuF";
 // If not set, it uses the hardhat account 0 private key.
 const deployerPrivateKey =
   process.env.DEPLOYER_PRIVATE_KEY ?? "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 // If not set, it uses ours Etherscan default API key.
 const etherscanApiKey = process.env.ETHERSCAN_API_KEY || "DNXJA8RX2Q3VZ4URQIWP7Z68CJXQZSC6AW";
+const polyscanApiKey = process.env.POLYSCAN_API_KEY || "DNXJA8RX2Q3VZ4URQIWP7Z68CJXQZSC6AW";
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -124,7 +107,7 @@ const config: HardhatUserConfig = {
       accounts: [deployerPrivateKey],
     },
     polygonMumbai: {
-      url: `https://polygon-mumbai.g.alchemy.com/v2/${providerApiKey}`,
+      url: `https://polygon-mumbai.g.alchemy.com/v2/${mumbaiApiKey}`,
       accounts: [deployerPrivateKey],
     },
     polygonZkEvm: {
@@ -178,8 +161,28 @@ const config: HardhatUserConfig = {
   },
   verify: {
     etherscan: {
-      apiKey: `${etherscanApiKey}`,
+      apiKey: {
+        polygonMumbai: `${polyscanApiKey}`,
+        mainnet: `${etherscanApiKey}`,
+        goerli: `${etherscanApiKey}`,
+        sepolia: `${etherscanApiKey}`,
+        avalancheFuji: "snowtrace",
+        avalanche: `${etherscanApiKey}`,
+      },
     },
+  },
+  etherscan: {
+    apiKey: {
+      polygonMumbai: `${polyscanApiKey}`,
+      mainnet: `${etherscanApiKey}`,
+      goerli: `${etherscanApiKey}`,
+      sepolia: `${etherscanApiKey}`,
+      avalancheFuji: "snowtrace",
+      avalanche: `${etherscanApiKey}`,
+    },
+  },
+  sourcify: {
+    enabled: false,
   },
 };
 

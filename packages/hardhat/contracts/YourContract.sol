@@ -84,4 +84,10 @@ contract YourContract {
 	 * Function that allows the contract to receive ETH
 	 */
 	receive() external payable {}
+
+
+	function getChainId() public view returns (uint) {
+		return block.chainid;
+	}
+
 }

@@ -229,6 +229,8 @@ export default function CreateEventForm() {
             data: approveData,
           });
           console.log("approveHash:", approveHash);
+          const transaction = await publicClient.waitForTransactionReceipt({ hash: approveHash as `0x${string}` });
+          console.log("approveTx:", transaction);
         }
       }
 
@@ -287,9 +289,8 @@ export default function CreateEventForm() {
 
   // Function to handle copying transaction hash to clipboard
   const copyHash = () => {
-    const hashText = JSON.stringify(eventData.hash, null, 2); // Convert leaves data to a nicely formatted JSON string
     navigator.clipboard
-      .writeText(hashText)
+      .writeText(eventData.hash)
       .then(() => {
         console.log("Transaction Hash copied to clipboard!");
       })

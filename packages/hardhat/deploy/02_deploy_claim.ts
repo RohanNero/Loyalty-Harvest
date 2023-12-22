@@ -22,20 +22,33 @@ const deployClaim: DeployFunction = async function (hre: HardhatRuntimeEnvironme
   const { deploy } = hre.deployments;
 
   // Deploy the `Claim.sol` contract
-  await deploy("Claim", {
-    from: deployer,
-    log: true,
-    // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
-    // automatically mining the contract deployment transaction. There is no effect on live networks.
-    autoMine: true,
-  });
+  try {
+    const contract = await deploy("Claim", {
+      from: deployer,
+      log: true,
+      // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
+      // automatically mining the contract deployment transaction. There is no effect on live networks.
+      waitConfirmations: 5,
+      autoMine: true,
+    });
 
-  // Get the deployed contract
-  // const claim = await hre.ethers.getContract("Claim", deployer);
+    // Verify the contract
+    console.log("Verifying contract...");
+    await hre.run("verify:verify", {
+      address: contract.address,
+      contract: "contracts/Claim.sol:Claim",
+    });
+  } catch (error) {
+    // I wanted to simply log this, but the error is still thrown before this is logged :(
+    if (error.message.includes("insufficient funds for gas")) {
+      console.log("Insufficient funds for gas!");
+      return;
+    }
+  }
 };
 
 export default deployClaim;
 
 // Tags are useful if you have multiple deploy files and only want to run one of them.
 // e.g. yarn deploy --tags YourContract
-deployClaim.tags = ["Claim", "dev"];
+deployClaim.tags = ["claim", "dev"];

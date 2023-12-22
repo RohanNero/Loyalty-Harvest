@@ -21,7 +21,7 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  await deploy("YourContract", {
+  const contract = await deploy("YourContract", {
     from: deployer,
     // Contract constructor arguments
     args: [deployer],
@@ -31,8 +31,13 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
     autoMine: true,
   });
 
-  // Get the deployed contract
-  // const yourContract = await hre.ethers.getContract("YourContract", deployer);
+  // Verify the contract
+  console.log("Verifying contract...");
+  await hre.run("verify:verify", {
+    address: contract.address,
+    constructorArguments: [deployer],
+    contract: "contracts/YourContract.sol:YourContract",
+  });
 };
 
 export default deployYourContract;

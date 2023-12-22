@@ -182,24 +182,22 @@ export default function CreateLeavesForm() {
     navigator.clipboard
       .writeText(leavesText)
       .then(() => {
-        // alert("Leaves data copied to clipboard!");
         console.log("Leaves data copied to clipboard!");
       })
       .catch(error => {
         console.error("Failed to copy leaves data to clipboard: ", error);
-        alert("Failed to copy leaves data to clipboard");
       });
   };
 
   return (
-    <div className="bg-secondary font-mono py-3 mb-4 w-1/2 flex-col flex items-center justify-center w-2/3">
+    <div className="bg-secondary font-mono py-3 mb-4 flex-col flex items-center justify-center w-full max-w-full">
       <h3 className="text-xl text-base-100 justify-self-center mb-4">Create Leaves</h3>
       <form className="text-center w-full flex flex-col gap-2 items-center justify-center" onSubmit={handleSubmit}>
         <input
           type="string"
           name="nftAddress"
           placeholder="NFT contract address"
-          className="border p-1.5 text-purple-400 focus:ring-0  rounded w-2/3 bg-green-200 hover:bg-green-300"
+          className="border p-1.5 text-purple-400 focus:ring-0 rounded w-2/5 bg-green-200 hover:bg-green-300"
           value={formData.nftAddress}
           onChange={handleInputChange}
         />
@@ -208,7 +206,7 @@ export default function CreateLeavesForm() {
           type="number"
           name="blockStart"
           placeholder="Starting block number"
-          className="border p-1.5 text-purple-400 focus:ring-0 rounded w-2/3 bg-green-200 hover:bg-green-300"
+          className="border p-1.5 text-purple-400 focus:ring-0 rounded w-2/5 bg-green-200 hover:bg-green-300"
           value={formData.blockStart}
           onChange={handleInputChange}
         />
@@ -217,7 +215,7 @@ export default function CreateLeavesForm() {
           type="number"
           name="blockEnd"
           placeholder="Ending block number"
-          className="border p-1.5 text-purple-400 focus:ring-0 rounded w-2/3 bg-green-200 hover:bg-green-300"
+          className="border p-1.5 text-purple-400 focus:ring-0 rounded w-2/5 bg-green-200 hover:bg-green-300"
           value={formData.blockEnd}
           onChange={handleInputChange}
         />
@@ -226,30 +224,30 @@ export default function CreateLeavesForm() {
           type="number"
           name="totalSupply"
           placeholder="Total amount of NFTs"
-          className="border p-1.5 text-purple-400 focus:ring-0 rounded w-2/3 bg-green-200 hover:bg-green-300"
+          className="border p-1.5 text-purple-400 focus:ring-0 rounded w-2/5 bg-green-200 hover:bg-green-300"
           value={formData.totalSupply}
           onChange={handleInputChange}
         />
 
         <button
           type="submit"
-          className="bg-purple-700 border text-base-100 rounded my-2 px-4 py-2 bg-gradient-to-r from-green-200 via-secondary to-green-200 hover:via-green-200 hover:to-green-200 hover:shadow-lg hover:-translate-y-1  w-1/2"
+          className="bg-purple-700 border text-base-100 rounded my-2 px-4 py-2 bg-gradient-to-r from-green-200 via-secondary to-green-200 hover:via-green-200 hover:to-green-200 hover:shadow-lg hover:-translate-y-1 w-2/5"
         >
           Create
         </button>
       </form>
       {/* Conditionally render the result in a paginated table */}
       {leafData && leafData?.leaves?.length > 0 && (
-        <div className="mt-4">
+        <div className="mt-4 max-w-full">
           <h4 className="text-lg font-semibold text-purple-400 mb-2">Leaves:</h4>
           <div className="overflow-x-auto">
-            <table className="table-auto border-collapse border border-green-200 bg-green-200 w-full">
+            <table className="border  border-green-200 bg-green-200 max-w-full whitespace-nowrap">
               <thead className="bg-green-300">
                 <tr>
                   <th className="border border-green-200 p-2 text-purple-500">Holder</th>
                   <th className="border border-green-200 p-2 text-purple-500">NFT Contract</th>
                   <th className="border border-green-200 p-2 text-purple-500">TokenId</th>
-                  <th className="border border-green-200 p-2 text-purple-500 custom-padding">Held Until</th>
+                  <th className="border border-green-200 p-2 text-purple-500 ">Held Until</th>
                 </tr>
               </thead>
               <tbody>
@@ -258,7 +256,7 @@ export default function CreateLeavesForm() {
                     <td className="border border-green-200 p-2 text-purple-400">{leaf[0]}</td>
                     <td className="border border-green-200 p-2 text-purple-400">{leaf[1]}</td>
                     <td className="border border-green-200 p-2 text-purple-400">{leaf[2]}</td>
-                    <td className="border border-green-200 p-2 text-purple-400 custom-padding">{leaf[3]}</td>
+                    <td className="border border-green-200 p-2 text-purple-400">{leaf[3]}</td>
                   </tr>
                 ))}
               </tbody>
