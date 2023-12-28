@@ -13,7 +13,8 @@ export type ChainAttributes = {
 
 // To allow your dapp to live on another chain, simply add its chainId to this array.
 // Entire list of chains: https://github.com/wevm/viem/blob/main/src/chains/index.ts
-export const includedChains = [1, 11155111, 137, 80001, 100, 43114, 43113, 5, 31337];
+export const includedChains = [11155111, 137, 80001, 43113]; // Sepolia, Polygon, Polygon Mumbai, Avalanche Fuji
+// To exist on more chains, Claim contracts will need to be deployed and the claimAddress field should be populated below
 
 // If adding a chain not listed below, provide a hex string color and a pricefeed address
 // from: https://docs.chain.link/data-feeds/price-feeds/addresses?network=ethereum&page=1
@@ -30,9 +31,7 @@ export const chainData: Record<string, ChainAttributes> = {
   [chains.sepolia.id]: {
     color: "#5f4bb6",
     priceFeed: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419", // ETH (On Ethereum)
-    // claimAddress: "0x01cA0957898BfB42d7620a355d98014a4731Ea8D",
     claimAddress: "0x3129124Ed8D20c4311B6eB8C7cB532947937B434",
-    //claimAddress: "0xad62636950E4D55D79863baecc54D9014940b210",
   },
   [chains.goerli.id]: {
     color: "#0975F6",
@@ -45,12 +44,12 @@ export const chainData: Record<string, ChainAttributes> = {
   [chains.polygon.id]: {
     color: "#2bbdf7",
     priceFeed: "0x7bAC85A8a13A4BcD8abb3eB7d6b4d632c5a57676", // MATIC (On Ethereum)
+    claimAddress: "0x149C03aAC3C6FBBe7aAA8cfeD96633367526f13A",
   },
   [chains.polygonMumbai.id]: {
     color: "#92D9FA",
     priceFeed: "0x7bAC85A8a13A4BcD8abb3eB7d6b4d632c5a57676", // MATIC (On Ethereum)
     claimAddress: "0xf0c4f07405ceD682251Fbe9F963B0Eb1B7479709",
-    // claimAddress: "0x93CFab61D5A4A899d10B8a63B60c873e0A656697",
   },
   [chains.optimismGoerli.id]: {
     color: "#f01a37",

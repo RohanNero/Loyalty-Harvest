@@ -173,6 +173,7 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: {
+      polygon: `${polyscanApiKey}`,
       polygonMumbai: `${polyscanApiKey}`,
       mainnet: `${etherscanApiKey}`,
       goerli: `${etherscanApiKey}`,

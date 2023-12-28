@@ -411,6 +411,7 @@ export default function CreateClaimForm() {
     }
     const value = transaction.logs[0].data;
     console.log("parseValue:", parseInt(value));
+    console.log("Data claimed:", data.claimed);
 
     console.log("Tx successfully executed!");
     setData(prevData => ({
