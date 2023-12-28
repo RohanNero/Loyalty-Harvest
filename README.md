@@ -25,6 +25,8 @@ Under the hood this project consists of a few different pieces:
 
 For testing values for the proof of concept, see the [POC.md](POC.md) file.
 
+This protocol currently lives on Ethereum Sepolia, Polygon, Polygon Mumbai, and Avalanche Fuji. Additional `Claim.sol` contracts will need to be deployed for this to work on more chains. Once deployed, the contract address must be added to the `chainData` object inside `networks.ts`.
+
 ### Creator Flow
 
 ![creator flow diagram](/packages/nextjs/public/creatorFlow.jpg)
