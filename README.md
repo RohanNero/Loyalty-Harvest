@@ -1,8 +1,10 @@
 ## Loyalty Harvest
 
+**Not audited, and is a WIP**
+
 Built with [Scaffold-ETH 2](https://scaffoldeth.io/)
 
-The goal of this project is to allow anyone to create a `reward event` for **any** ERC-721 token, in which any address that holds the NFT during the period will receive rewards.
+LH allows anyone to create a `reward event` for **any** ERC-721 token, in which any address that holds the NFT during the period will receive rewards.
 
 Incentivizes users to hold NFTs that they currently own, and other users to buy an NFT if they don't hold one.
 
